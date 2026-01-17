@@ -1,0 +1,293 @@
+@import "tailwindcss";
+
+:root {
+  /* Cosmic palette */
+  --color-void: #0a0a1a;
+  --color-nebula: #1a1a3a;
+  --color-cosmic-purple: #6b21a8;
+  --color-stellar-pink: #ec4899;
+  --color-aurora-green: #10b981;
+  --color-solar-yellow: #fbbf24;
+  --color-comet-orange: #f97316;
+  --color-plasma-blue: #3b82f6;
+  --color-stardust: #e2e8f0;
+  
+  /* Age-specific palettes */
+  --young-primary: #ec4899;
+  --young-secondary: #fbbf24;
+  --young-accent: #10b981;
+  
+  --middle-primary: #3b82f6;
+  --middle-secondary: #8b5cf6;
+  --middle-accent: #06b6d4;
+  
+  --older-primary: #6b21a8;
+  --older-secondary: #ec4899;
+  --older-accent: #f97316;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Quicksand', system-ui, sans-serif;
+  background: var(--color-void);
+  color: var(--color-stardust);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Outfit', system-ui, sans-serif;
+  font-weight: 700;
+}
+
+/* Cosmic background animation */
+.cosmic-bg {
+  position: fixed;
+  inset: 0;
+  background: 
+    radial-gradient(ellipse at 20% 80%, rgba(107, 33, 168, 0.3) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(236, 72, 153, 0.2) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(59, 130, 246, 0.15) 0%, transparent 60%),
+    linear-gradient(180deg, #0a0a1a 0%, #1a1a3a 100%);
+  z-index: -2;
+}
+
+/* Animated stars */
+.stars {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+}
+
+.star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: white;
+  border-radius: 50%;
+  animation: twinkle var(--duration, 3s) ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+  opacity: 0.3;
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.5); }
+}
+
+/* Floating shapes */
+.floating-shape {
+  position: absolute;
+  border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(236, 72, 153, 0.2));
+  filter: blur(40px);
+  animation: float 20s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-30px) rotate(180deg); }
+}
+
+/* Glow effects */
+.glow {
+  box-shadow: 
+    0 0 20px rgba(139, 92, 246, 0.5),
+    0 0 40px rgba(236, 72, 153, 0.3),
+    0 0 60px rgba(59, 130, 246, 0.2);
+}
+
+.glow-pink {
+  box-shadow: 0 0 30px rgba(236, 72, 153, 0.5);
+}
+
+.glow-blue {
+  box-shadow: 0 0 30px rgba(59, 130, 246, 0.5);
+}
+
+.glow-green {
+  box-shadow: 0 0 30px rgba(16, 185, 129, 0.5);
+}
+
+.glow-yellow {
+  box-shadow: 0 0 30px rgba(251, 191, 36, 0.5);
+}
+
+/* Glass morphism */
+.glass {
+  background: rgba(26, 26, 58, 0.6);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glass-light {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Button styles */
+.btn-cosmic {
+  background: linear-gradient(135deg, #6b21a8, #ec4899);
+  border: none;
+  border-radius: 16px;
+  padding: 16px 32px;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-cosmic::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #8b5cf6, #f472b6);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.btn-cosmic:hover::before {
+  opacity: 1;
+}
+
+.btn-cosmic:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(139, 92, 246, 0.4);
+}
+
+.btn-cosmic span {
+  position: relative;
+  z-index: 1;
+}
+
+/* Card styles */
+.card-cosmic {
+  background: linear-gradient(135deg, rgba(26, 26, 58, 0.8), rgba(10, 10, 26, 0.9));
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: 24px;
+  padding: 24px;
+  transition: all 0.4s ease;
+}
+
+.card-cosmic:hover {
+  border-color: rgba(236, 72, 153, 0.5);
+  transform: translateY(-4px);
+  box-shadow: 
+    0 20px 40px rgba(0, 0, 0, 0.3),
+    0 0 30px rgba(139, 92, 246, 0.2);
+}
+
+/* Game tile */
+.game-tile {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  font-weight: 700;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.game-tile:hover {
+  transform: scale(1.05);
+}
+
+.game-tile:active {
+  transform: scale(0.95);
+}
+
+/* Progress bar */
+.progress-bar {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #6b21a8, #ec4899);
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+/* Confetti animation */
+@keyframes confetti-fall {
+  0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+
+.confetti {
+  position: fixed;
+  width: 10px;
+  height: 10px;
+  animation: confetti-fall 3s ease-out forwards;
+}
+
+/* Success animation */
+@keyframes success-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+.success-pulse {
+  animation: success-pulse 0.5s ease;
+}
+
+/* Shake animation for wrong answers */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-10px); }
+  40%, 80% { transform: translateX(10px); }
+}
+
+.shake {
+  animation: shake 0.5s ease;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(26, 26, 58, 0.5);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #6b21a8, #ec4899);
+  border-radius: 4px;
+}
+
+/* Age-specific themes */
+.theme-young {
+  --primary: var(--young-primary);
+  --secondary: var(--young-secondary);
+  --accent: var(--young-accent);
+}
+
+.theme-middle {
+  --primary: var(--middle-primary);
+  --secondary: var(--middle-secondary);
+  --accent: var(--middle-accent);
+}
+
+.theme-older {
+  --primary: var(--older-primary);
+  --secondary: var(--older-secondary);
+  --accent: var(--older-accent);
+}
