@@ -32,6 +32,7 @@
 
 html {
   scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
@@ -39,7 +40,18 @@ body {
   background: var(--color-void);
   color: var(--color-stardust);
   min-height: 100vh;
+  min-height: 100dvh;
   overflow-x: hidden;
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Minimum touch target for accessibility (44px) */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -83,6 +95,13 @@ h1, h2, h3, h4, h5, h6 {
   50% { opacity: 1; transform: scale(1.5); }
 }
 
+/* Softer twinkle on mobile to reduce GPU work and crashes */
+@media (max-width: 768px) {
+  .star {
+    animation-duration: 4s;
+  }
+}
+
 /* Floating shapes */
 .floating-shape {
   position: absolute;
@@ -121,17 +140,27 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: 0 0 30px rgba(251, 191, 36, 0.5);
 }
 
-/* Glass morphism */
+/* Glass morphism - reduced blur on mobile to avoid GPU overload/crashes */
 .glass {
   background: rgba(26, 26, 58, 0.6);
   backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.1);
+}
+@media (max-width: 768px) {
+  .glass {
+    backdrop-filter: blur(6px);
+  }
 }
 
 .glass-light {
   background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.08);
+}
+@media (max-width: 768px) {
+  .glass-light {
+    backdrop-filter: blur(4px);
+  }
 }
 
 /* Button styles */
@@ -290,4 +319,33 @@ h1, h2, h3, h4, h5, h6 {
   --primary: var(--older-primary);
   --secondary: var(--older-secondary);
   --accent: var(--older-accent);
+}
+
+/* Under One Condition — rain / snow */
+@keyframes rain-fall {
+  0% { transform: translateY(-10%); opacity: 0.8; }
+  100% { transform: translateY(100vh); opacity: 0.4; }
+}
+
+.rain-streak {
+  position: absolute;
+  width: 2px;
+  height: 20px;
+  background: linear-gradient(to bottom, transparent, rgba(147, 197, 253, 0.7));
+  animation: rain-fall linear infinite;
+}
+
+@keyframes snow-fall {
+  0% { transform: translateY(-10%) translateX(0); opacity: 0.9; }
+  100% { transform: translateY(100vh) translateX(20px); opacity: 0.6; }
+}
+
+.snow-flake {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: white;
+  border-radius: 50%;
+  animation: snow-fall linear infinite;
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.8);
 }

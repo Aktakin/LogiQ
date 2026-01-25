@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useGameStore } from '@/store/gameStore';
@@ -17,8 +17,11 @@ interface Platform {
   isTrap?: boolean;
 }
 
+type LevelMode = 'select' | 'type';
+
 interface Level {
   id: number;
+  mode: LevelMode;
   title: string;
   concept: string;
   variables: Record<string, number | boolean | string>;
@@ -26,9 +29,8 @@ interface Level {
   hint: string;
 }
 
-const levels: Level[] = [
+const selectLevels: Omit<Level, 'id' | 'mode'>[] = [
   {
-    id: 1,
     title: 'First Evaluation',
     concept: 'Comparison operators: > means "greater than"',
     variables: { x: 10 },
@@ -41,7 +43,6 @@ const levels: Level[] = [
     ],
   },
   {
-    id: 2,
     title: 'Equal or Not',
     concept: '=== checks if values are exactly equal',
     variables: { score: 100 },
@@ -55,7 +56,6 @@ const levels: Level[] = [
     ],
   },
   {
-    id: 3,
     title: 'Boolean Logic',
     concept: 'Booleans are either true or false',
     variables: { isActive: true, isPaused: false },
@@ -69,7 +69,6 @@ const levels: Level[] = [
     ],
   },
   {
-    id: 4,
     title: 'AND Logic',
     concept: '&& (AND) requires BOTH conditions to be true',
     variables: { a: 5, b: 10 },
@@ -83,7 +82,6 @@ const levels: Level[] = [
     ],
   },
   {
-    id: 5,
     title: 'OR Logic',
     concept: '|| (OR) requires at least ONE condition to be true',
     variables: { health: 0, shield: 50 },
@@ -97,7 +95,6 @@ const levels: Level[] = [
     ],
   },
   {
-    id: 6,
     title: 'String Comparison',
     concept: 'Strings can be compared with === too',
     variables: { status: 'active', mode: 'dark' },
@@ -111,7 +108,6 @@ const levels: Level[] = [
     ],
   },
   {
-    id: 7,
     title: 'NOT Operator',
     concept: '! (NOT) flips true to false and false to true',
     variables: { isLocked: false, hasKey: true },
@@ -126,7 +122,6 @@ const levels: Level[] = [
     ],
   },
   {
-    id: 8,
     title: 'Complex Path',
     concept: 'Combine multiple operators for complex logic',
     variables: { level: 5, coins: 100, lives: 3 },
@@ -143,6 +138,67 @@ const levels: Level[] = [
   },
 ];
 
+// Build levels: after each select level, add a type-in level with same layout
+const levels: Level[] = [];
+let levelId = 1;
+selectLevels.forEach((sl) => {
+  levels.push({
+    id: levelId++,
+    mode: 'select',
+    title: sl.title,
+    concept: sl.concept,
+    variables: sl.variables,
+    platforms: sl.platforms,
+    hint: sl.hint,
+  });
+  levels.push({
+    id: levelId++,
+    mode: 'type',
+    title: `${sl.title} — Type it!`,
+    concept: sl.concept,
+    variables: sl.variables,
+    platforms: sl.platforms,
+    hint: 'Type a condition that is TRUE to leap to the next platform (e.g. x > 5).',
+  });
+});
+
+/** Safely evaluate a logic expression with given variables. Returns { ok: true, value } or { ok: false, error }. */
+function safeEval(
+  expr: string,
+  variables: Record<string, number | boolean | string>
+): { ok: true; value: boolean } | { ok: false; error: string } {
+  const trimmed = expr.trim();
+  if (!trimmed) return { ok: false, error: 'Type a condition (e.g. x > 5)' };
+  // Only allow expected chars: names, numbers, spaces, " ', operators ( ) ! = < > & | - +
+  const safeRegex = /^[\w\s"'.()!=<>|&+-]+$/;
+  if (!safeRegex.test(trimmed)) {
+    return { ok: false, error: 'Only use variables, numbers, and operators (e.g. >, ===, &&)' };
+  }
+  try {
+    const keys = Object.keys(variables);
+    const values = Object.values(variables);
+    const fn = new Function(...keys, `"use strict"; return Boolean(${trimmed});`);
+    const result = fn(...values);
+    return { ok: true, value: !!result };
+  } catch {
+    return { ok: false, error: 'Invalid expression. Check spelling and try again.' };
+  }
+}
+
+/** Get the correct path (platform ids) from START to GOAL — only non-trap platforms in order. */
+function getCorrectPath(platforms: Platform[]): number[] {
+  const start = platforms.find(p => p.isStart);
+  const goal = platforms.find(p => p.isGoal);
+  if (!start || !goal) return [];
+  const safe = platforms.filter(p => !p.isTrap);
+  const sorted = [...safe].sort((a, b) => a.x !== b.x ? a.x - b.x : a.y - b.y);
+  const order = sorted.map(p => p.id);
+  const startIdx = order.indexOf(start.id);
+  const goalIdx = order.indexOf(goal.id);
+  if (startIdx === -1 || goalIdx === -1 || startIdx > goalIdx) return [start.id, goal.id];
+  return order.slice(startIdx, goalIdx + 1);
+}
+
 export default function LogicLeapGame() {
   const router = useRouter();
   const { addStars, incrementGamesPlayed, recordAnswer } = useGameStore();
@@ -153,14 +209,38 @@ export default function LogicLeapGame() {
   const [gameState, setGameState] = useState<'playing' | 'won' | 'lost'>('playing');
   const [showConfetti, setShowConfetti] = useState(false);
   const [jumpAnimation, setJumpAnimation] = useState(false);
+  const [typeInput, setTypeInput] = useState('');
+  const [typeError, setTypeError] = useState('');
 
   const level = levels[currentLevelIndex];
+  if (!level) {
+    return (
+      <main className="min-h-screen bg-slate-950 flex items-center justify-center p-6">
+        <div className="text-center text-white">
+          <p className="mb-4">No level loaded.</p>
+          <button
+            onClick={() => router.push('/games/programming')}
+            className="px-4 py-2 rounded-lg bg-cyan-600 text-white"
+          >
+            ← Back to Programming
+          </button>
+        </div>
+      </main>
+    );
+  }
   const currentPlatform = level.platforms.find(p => p.id === playerPosition);
+  const isTypeLevel = level.mode === 'type';
+  const correctPath = useMemo(() => getCorrectPath(level.platforms), [level.platforms]);
+  const pathIndex = correctPath.indexOf(playerPosition);
+  const nextCorrectPlatformId = pathIndex >= 0 && pathIndex < correctPath.length - 1 ? correctPath[pathIndex + 1] : null;
+  const trapPlatform = level.platforms.find(p => p.isTrap);
 
   useEffect(() => {
     setPlayerPosition(0);
     setVisitedPlatforms([0]);
     setGameState('playing');
+    setTypeInput('');
+    setTypeError('');
   }, [currentLevelIndex]);
 
   const jumpToPlatform = useCallback((platformId: number) => {
@@ -189,10 +269,48 @@ export default function LogicLeapGame() {
     }, 300);
   }, [gameState, level.platforms, visitedPlatforms, addStars, recordAnswer, incrementGamesPlayed]);
 
+  const submitTypeLeap = () => {
+    setTypeError('');
+    const result = safeEval(typeInput, level.variables);
+    if (!result.ok) {
+      setTypeError(result.error);
+      return;
+    }
+    setJumpAnimation(true);
+    setTimeout(() => {
+      setJumpAnimation(false);
+      if (result.value) {
+        if (nextCorrectPlatformId == null) return;
+        const target = level.platforms.find(p => p.id === nextCorrectPlatformId);
+        if (!target) return;
+        setPlayerPosition(nextCorrectPlatformId);
+        setVisitedPlatforms(prev => [...prev, nextCorrectPlatformId]);
+        setTypeInput('');
+        if (target.isGoal) {
+          setGameState('won');
+          setShowConfetti(true);
+          addStars(2);
+          recordAnswer(true);
+          incrementGamesPlayed();
+          setTimeout(() => setShowConfetti(false), 3000);
+        }
+      } else {
+        if (trapPlatform) {
+          setPlayerPosition(trapPlatform.id);
+          setVisitedPlatforms(prev => [...prev, trapPlatform.id]);
+        }
+        setGameState('lost');
+        recordAnswer(false);
+      }
+    }, 300);
+  };
+
   const resetLevel = () => {
     setPlayerPosition(0);
     setVisitedPlatforms([0]);
     setGameState('playing');
+    setTypeInput('');
+    setTypeError('');
   };
 
   const nextLevel = () => {
@@ -294,6 +412,42 @@ export default function LogicLeapGame() {
           </div>
         </motion.div>
 
+        {/* Type-in panel (type levels only) */}
+        {isTypeLevel && gameState === 'playing' && (
+          <motion.div
+            className="bg-slate-800/80 border border-cyan-500/50 rounded-xl p-4 mb-4"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <div className="text-cyan-400 font-mono text-sm mb-2">
+              Type a condition that is <span className="text-emerald-400 font-bold">TRUE</span> to make the frog leap →
+            </div>
+            <div className="flex flex-wrap gap-2 items-center">
+              <input
+                type="text"
+                value={typeInput}
+                onChange={(e) => { setTypeInput(e.target.value); setTypeError(''); }}
+                onKeyDown={(e) => e.key === 'Enter' && submitTypeLeap()}
+                placeholder="e.g. x > 5 or score === 100"
+                className="flex-1 min-w-[200px] px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg font-mono text-white placeholder-slate-500 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none"
+                aria-label="Type condition"
+              />
+              <motion.button
+                onClick={submitTypeLeap}
+                disabled={!typeInput.trim()}
+                className="px-5 py-3 bg-cyan-600 hover:bg-cyan-500 disabled:bg-slate-700 disabled:text-slate-500 text-white font-mono font-bold rounded-lg"
+                whileHover={typeInput.trim() ? { scale: 1.03 } : {}}
+                whileTap={typeInput.trim() ? { scale: 0.98 } : {}}
+              >
+                Leap! 🐸
+              </motion.button>
+            </div>
+            {typeError && (
+              <div className="mt-2 text-red-400 font-mono text-sm">{typeError}</div>
+            )}
+          </motion.div>
+        )}
+
         {/* Game Board */}
         <motion.div
           className="bg-slate-900/50 border border-slate-700 rounded-xl p-4 mb-4 relative"
@@ -305,7 +459,7 @@ export default function LogicLeapGame() {
           {level.platforms.map((platform) => {
             const isCurrent = playerPosition === platform.id;
             const isVisited = visitedPlatforms.includes(platform.id);
-            const canJump = gameState === 'playing' && !isVisited && !platform.isStart;
+            const canJump = !isTypeLevel && gameState === 'playing' && !isVisited && !platform.isStart;
             
             return (
               <motion.button
@@ -363,7 +517,7 @@ export default function LogicLeapGame() {
 
           {/* Connection lines hint */}
           <div className="absolute bottom-2 right-2 text-xs text-slate-600 font-mono">
-            Click TRUE platforms to reach the goal
+            {isTypeLevel ? 'Type a TRUE condition above to leap' : 'Click TRUE platforms to reach the goal'}
           </div>
         </motion.div>
 

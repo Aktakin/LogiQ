@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { useGameStore } from '@/store/gameStore';
 import FloatingShapes from '@/components/FloatingShapes';
 
-type TabType = 'code-quest' | 'games' | 'more-challenges';
+type TabType = 'code-quest' | 'games' | 'programming';
 
 interface GameItem {
   id: string;
@@ -69,12 +69,12 @@ const codeQuestGames: GameItem[] = [
   },
   {
     id: 'conditions',
-    title: 'If-Then Detective',
-    description: 'Make decisions with conditional logic',
-    icon: '🔍',
-    href: '/games/programming/conditions',
+    title: 'Under One Condition',
+    description: 'If, else, and choices — then block code with two routes',
+    icon: '🌓',
+    href: '/games/deduction',
     color: '#f59e0b',
-    tags: ['Conditions', 'Logic'],
+    tags: ['Conditions', 'If/Else'],
   },
   {
     id: 'logic-leap',
@@ -140,49 +140,43 @@ const funGames: GameItem[] = [
   },
 ];
 
-const moreChallenges: GameItem[] = [
+const programmingProjects: GameItem[] = [
   {
-    id: 'patterns',
-    title: 'Pattern Quest',
-    description: 'Find the missing piece in colorful patterns',
-    icon: '🎨',
-    href: '/games/patterns',
-    color: '#ec4899',
-    tags: ['Patterns', 'Visual'],
+    id: 'rock-paper-scissors',
+    title: '🪨 Rock Paper Scissors Showdown',
+    description: 'Beat the computer! Type the code and make your game — win with rock, paper, or scissors!',
+    icon: '✂️',
+    href: '/games/programming/projects/rock-paper-scissors',
+    color: '#8b5cf6',
+    tags: ['Fun', 'Win or lose', 'Code it yourself'],
+    isNew: true,
   },
   {
-    id: 'sequences',
-    title: 'Sequence Master',
-    description: 'Discover what comes next in the sequence',
-    icon: '🔢',
-    href: '/games/sequences',
-    color: '#3b82f6',
-    tags: ['Numbers', 'Logic'],
+    id: 'guess-the-number',
+    title: '🎲 Secret Number Challenge',
+    description: 'Can you crack the secret number? Type the code and play — guess 1 to 10 and see if you’re right!',
+    icon: '🎲',
+    href: '/games/programming/projects/guess-the-number',
+    color: '#06b6d4',
+    tags: ['Mystery', 'Guess', 'You can do it'],
+    isNew: true,
   },
   {
-    id: 'deduction',
-    title: 'Logic Detective',
-    description: 'Use clues to solve mysteries',
-    icon: '🕵️',
-    href: '/games/deduction',
+    id: 'pick-a-card',
+    title: '🃏 Magic Card Deck',
+    description: 'Draw a card and see what you get! Type the code and watch your deck come to life.',
+    icon: '🃏',
+    href: '/games/programming/projects/pick-a-card',
     color: '#10b981',
-    tags: ['Deduction', 'Clues'],
-  },
-  {
-    id: 'spatial',
-    title: 'Shape Shifter',
-    description: 'Rotate and match shapes in space',
-    icon: '🧊',
-    href: '/games/spatial',
-    color: '#f97316',
-    tags: ['Spatial', '3D'],
+    tags: ['Lucky', 'Surprise', 'Arrays'],
+    isNew: true,
   },
 ];
 
 const tabs = [
   { id: 'code-quest' as TabType, label: 'Code Quest', icon: '💻', color: '#8b5cf6' },
   { id: 'games' as TabType, label: 'Games', icon: '🎮', color: '#06b6d4' },
-  { id: 'more-challenges' as TabType, label: 'More Challenges', icon: '🎯', color: '#f59e0b' },
+  { id: 'programming' as TabType, label: 'Programming', icon: '⌨️', color: '#f59e0b' },
 ];
 
 export default function DashboardPage() {
@@ -203,26 +197,26 @@ export default function DashboardPage() {
     switch (tab) {
       case 'code-quest': return codeQuestGames;
       case 'games': return funGames;
-      case 'more-challenges': return moreChallenges;
+      case 'programming': return programmingProjects;
     }
   };
 
   const currentGames = getGamesForTab(activeTab);
 
   return (
-    <main className="min-h-screen p-4 md:p-8 relative">
+    <main className="min-h-screen min-h-[100dvh] p-4 sm:p-6 md:p-8 relative">
       <FloatingShapes />
       
       {/* Header */}
       <motion.header
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative z-10 mb-8"
+        className="relative z-10 mb-4 sm:mb-8"
       >
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="min-w-0 flex-1">
             <motion.h1
-              className="text-2xl md:text-3xl font-bold text-white mb-1"
+              className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-0.5 sm:mb-1 truncate"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.2 }}
@@ -230,7 +224,7 @@ export default function DashboardPage() {
               Hello, <span className="text-pink-400">{playerName || 'Explorer'}</span>! 🌟
             </motion.h1>
             <motion.p
-              className="text-gray-400 text-sm"
+              className="text-gray-400 text-xs sm:text-sm"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3 }}
@@ -241,7 +235,7 @@ export default function DashboardPage() {
 
           <motion.button
             onClick={() => router.push('/')}
-            className="glass px-4 py-2 rounded-xl text-gray-300 hover:text-white transition-colors text-sm"
+            className="glass px-4 py-2.5 rounded-xl text-gray-300 hover:text-white transition-colors text-sm min-h-[44px] touch-target flex-shrink-0"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
@@ -256,14 +250,14 @@ export default function DashboardPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
-        className="relative z-10 mb-8"
+        className="relative z-10 mb-4 sm:mb-8"
       >
-        <div className="flex gap-2 p-1.5 glass rounded-2xl">
+        <div className="flex gap-1 sm:gap-2 p-1.5 glass rounded-2xl overflow-x-auto">
           {tabs.map((tab) => (
             <motion.button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 py-3 px-4 rounded-xl font-semibold text-sm md:text-base transition-all flex items-center justify-center gap-2 ${
+              className={`flex-1 min-w-0 py-3 px-2 sm:px-4 rounded-xl font-semibold text-xs sm:text-sm md:text-base transition-all flex items-center justify-center gap-1.5 sm:gap-2 min-h-[48px] touch-target ${
                 activeTab === tab.id
                   ? 'text-white shadow-lg'
                   : 'text-gray-400 hover:text-white'
@@ -275,8 +269,8 @@ export default function DashboardPage() {
               whileHover={{ scale: activeTab === tab.id ? 1 : 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
-              <span className="text-xl">{tab.icon}</span>
-              <span className="hidden sm:inline">{tab.label}</span>
+              <span className="text-lg sm:text-xl flex-shrink-0">{tab.icon}</span>
+              <span className="hidden xs:inline sm:inline truncate">{tab.label}</span>
             </motion.button>
           ))}
         </div>
@@ -290,12 +284,12 @@ export default function DashboardPage() {
         className="relative z-10"
       >
         {/* Tab Header */}
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-white flex items-center gap-3">
-            <span>{tabs.find(t => t.id === activeTab)?.icon}</span>
-            {tabs.find(t => t.id === activeTab)?.label}
+        <div className="flex items-center justify-between gap-2 mb-4 sm:mb-6">
+          <h2 className="text-lg sm:text-2xl font-bold text-white flex items-center gap-2 sm:gap-3 min-w-0">
+            <span className="flex-shrink-0">{tabs.find(t => t.id === activeTab)?.icon}</span>
+            <span className="truncate">{tabs.find(t => t.id === activeTab)?.label}</span>
           </h2>
-          <span className="text-gray-500 text-sm">
+          <span className="text-gray-500 text-xs sm:text-sm flex-shrink-0">
             {currentGames.length} {currentGames.length === 1 ? 'game' : 'games'}
           </span>
         </div>
@@ -313,7 +307,7 @@ export default function DashboardPage() {
                 ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' 
                 : activeTab === 'games'
                   ? 'grid-cols-1 md:grid-cols-2'
-                  : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4'
+                  : 'grid-cols-1 md:grid-cols-2'
             }`}
           >
             {currentGames.map((game, index) => (
@@ -345,29 +339,29 @@ export default function DashboardPage() {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.7 }}
-        className="mt-10 relative z-10"
+        className="mt-6 sm:mt-10 relative z-10"
       >
         <div 
-          className="rounded-2xl p-6 relative overflow-hidden"
+          className="rounded-2xl p-4 sm:p-6 relative overflow-hidden"
           style={{
             background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(6, 182, 212, 0.2))',
             border: '1px solid rgba(139, 92, 246, 0.3)',
           }}
         >
-          <div className="relative flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
+          <div className="relative flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
+            <div className="flex items-center gap-3 sm:gap-4 text-center sm:text-left">
               <motion.div
                 animate={{ rotate: [0, 10, -10, 0] }}
                 transition={{ duration: 2, repeat: Infinity }}
-                className="text-5xl"
+                className="text-4xl sm:text-5xl flex-shrink-0"
               >
                 🎁
               </motion.div>
-              <div>
-                <h3 className="text-xl font-bold text-white mb-1">
+              <div className="min-w-0">
+                <h3 className="text-lg sm:text-xl font-bold text-white mb-0.5 sm:mb-1">
                   Daily Challenge
                 </h3>
-                <p className="text-gray-300 text-sm">
+                <p className="text-gray-300 text-xs sm:text-sm">
                   Complete today&apos;s puzzle for bonus stars!
                 </p>
               </div>
@@ -376,7 +370,7 @@ export default function DashboardPage() {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="btn-cosmic px-6 py-2.5 text-sm"
+              className="btn-cosmic px-5 sm:px-6 py-2.5 text-sm min-h-[44px] touch-target w-full sm:w-auto"
             >
               <span>Play Now →</span>
             </motion.button>
@@ -436,10 +430,10 @@ function GameCard({
         </motion.div>
 
         {/* Title */}
-        <h3 className="text-lg font-bold text-white mb-1">{game.title}</h3>
+        <h3 className="text-base sm:text-lg font-bold text-white mb-1 line-clamp-2">{game.title}</h3>
 
         {/* Description */}
-        <p className="text-gray-400 text-sm mb-3 line-clamp-2">{game.description}</p>
+        <p className="text-gray-400 text-xs sm:text-sm mb-3 line-clamp-2">{game.description}</p>
 
         {/* Tags */}
         {game.tags && (

@@ -32,7 +32,7 @@ export default function HomePage() {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-4 relative">
+    <main className="min-h-screen min-h-[100dvh] flex items-center justify-center p-4 sm:p-6 relative">
       <FloatingShapes />
       
       <AnimatePresence mode="wait">
@@ -61,17 +61,17 @@ function WelcomeScreen({ onStart, playerName }: { onStart: () => void; playerNam
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.5 }}
-      className="text-center max-w-2xl relative z-10"
+      className="text-center max-w-2xl w-full relative z-10 px-3 sm:px-4"
     >
       {/* Logo */}
       <motion.div
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
         transition={{ type: 'spring', stiffness: 200, delay: 0.2 }}
-        className="mb-8"
+        className="mb-4 sm:mb-8"
       >
-        <div className="inline-flex items-center justify-center w-32 h-32 rounded-3xl bg-gradient-to-br from-purple-600 via-pink-500 to-blue-500 glow mb-4">
-          <span className="text-6xl">🧩</span>
+        <div className="inline-flex items-center justify-center w-24 h-24 sm:w-32 sm:h-32 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-purple-600 via-pink-500 to-blue-500 glow mb-4">
+          <span className="text-5xl sm:text-6xl">🧩</span>
         </div>
       </motion.div>
 
@@ -80,7 +80,7 @@ function WelcomeScreen({ onStart, playerName }: { onStart: () => void; playerNam
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
-        className="text-6xl md:text-7xl font-bold mb-4"
+        className="text-4xl sm:text-6xl md:text-7xl font-bold mb-3 sm:mb-4 px-1"
       >
         <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
           LogiQuest
@@ -114,7 +114,7 @@ function WelcomeScreen({ onStart, playerName }: { onStart: () => void; playerNam
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.5 }}
-        className="flex flex-wrap justify-center gap-4 mb-10"
+        className="flex flex-wrap justify-center gap-2 sm:gap-4 mb-6 sm:mb-10"
       >
         {['🎮 Fun Games', '🧠 Smart Puzzles', '⭐ Earn Stars', '📈 Track Progress'].map(
           (feature, i) => (
@@ -139,23 +139,23 @@ function WelcomeScreen({ onStart, playerName }: { onStart: () => void; playerNam
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={onStart}
-        className="btn-cosmic text-xl px-12 py-5 rounded-2xl"
+        className="btn-cosmic text-lg sm:text-xl px-8 sm:px-12 py-4 sm:py-5 rounded-2xl min-h-[48px] touch-target w-full sm:w-auto max-w-xs sm:max-w-none"
       >
         <span>{playerName ? 'Continue Adventure' : 'Start Adventure'} 🚀</span>
       </motion.button>
 
-      {/* Floating elements */}
+      {/* Floating elements - hidden on small screens to avoid overlap */}
       <motion.div
         animate={{ y: [0, -10, 0] }}
         transition={{ duration: 3, repeat: Infinity }}
-        className="absolute -left-20 top-20 text-5xl opacity-50"
+        className="absolute left-2 sm:-left-20 top-20 text-3xl sm:text-5xl opacity-30 sm:opacity-50 pointer-events-none"
       >
         ✨
       </motion.div>
       <motion.div
         animate={{ y: [0, 10, 0] }}
         transition={{ duration: 4, repeat: Infinity }}
-        className="absolute -right-10 bottom-20 text-4xl opacity-50"
+        className="absolute right-2 sm:-right-10 bottom-20 text-2xl sm:text-4xl opacity-30 sm:opacity-50 pointer-events-none"
       >
         🌙
       </motion.div>
@@ -219,7 +219,7 @@ function NameScreen({
         <motion.button
           type="submit"
           disabled={!tempName.trim()}
-          className="btn-cosmic mt-6 w-full py-4 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
+          className="btn-cosmic mt-6 w-full py-4 text-lg min-h-[48px] touch-target disabled:opacity-50 disabled:cursor-not-allowed"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}

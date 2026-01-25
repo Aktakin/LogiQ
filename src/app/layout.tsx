@@ -7,6 +7,13 @@ export const metadata: Metadata = {
   keywords: ["logic", "kids", "learning", "puzzles", "games", "education"],
 };
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  viewportFit: "cover",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -28,13 +35,16 @@ export default function RootLayout({
   );
 }
 
+// Fewer stars to reduce paint/composite load on mobile (was 100, caused crashes)
+const STAR_COUNT = 36;
+
 function Stars() {
-  const stars = Array.from({ length: 100 }, (_, i) => ({
+  const stars = Array.from({ length: STAR_COUNT }, (_, i) => ({
     id: i,
-    left: `${Math.random() * 100}%`,
-    top: `${Math.random() * 100}%`,
-    duration: `${2 + Math.random() * 4}s`,
-    delay: `${Math.random() * 3}s`,
+    left: `${(i * 17 + 3) % 100}%`,
+    top: `${(i * 23 + 7) % 100}%`,
+    duration: `${2 + (i % 4)}s`,
+    delay: `${(i % 3)}s`,
   }));
 
   return (

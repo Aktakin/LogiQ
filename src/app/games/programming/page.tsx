@@ -86,16 +86,16 @@ const categories: Category[] = [
   },
   {
     id: 'conditions',
-    title: 'If-Then Detective',
-    description: 'Make decisions with conditional logic!',
-    icon: '🔍',
+    title: 'Under One Condition',
+    description: 'If, else, and choices — then block code with two routes!',
+    icon: '🌓',
     color: '#f59e0b',
     bgGradient: 'from-amber-600/20 to-orange-600/20',
     levels: 10,
     completed: 0,
     locked: false,
     comingSoon: false,
-    path: '/games/programming/conditions',
+    path: '/games/deduction',
   },
   {
     id: 'algorithms',
@@ -121,6 +121,45 @@ const categories: Category[] = [
     locked: false,
     comingSoon: false,
     path: '/games/programming/debugging',
+  },
+  {
+    id: 'rock-paper-scissors',
+    title: 'Rock Paper Scissors Showdown',
+    description: 'Beat the computer! Code your game and play — rock, paper, or scissors?',
+    icon: '✂️',
+    color: '#8b5cf6',
+    bgGradient: 'from-purple-600/20 to-violet-600/20',
+    levels: 1,
+    completed: 0,
+    locked: false,
+    comingSoon: false,
+    path: '/games/programming/projects/rock-paper-scissors',
+  },
+  {
+    id: 'guess-the-number',
+    title: 'Secret Number Challenge',
+    description: 'Crack the secret number! Guess 1–10 and see if you\'re right.',
+    icon: '🎲',
+    color: '#06b6d4',
+    bgGradient: 'from-cyan-600/20 to-sky-600/20',
+    levels: 1,
+    completed: 0,
+    locked: false,
+    comingSoon: false,
+    path: '/games/programming/projects/guess-the-number',
+  },
+  {
+    id: 'pick-a-card',
+    title: 'Magic Card Deck',
+    description: 'Draw a card and see what you get! Code your deck and try your luck.',
+    icon: '🃏',
+    color: '#10b981',
+    bgGradient: 'from-emerald-600/20 to-teal-600/20',
+    levels: 1,
+    completed: 0,
+    locked: false,
+    comingSoon: false,
+    path: '/games/programming/projects/pick-a-card',
   },
   {
     id: 'events',
@@ -279,7 +318,7 @@ export default function CodeQuestHub() {
               then <span className="text-emerald-400 font-semibold">Function Factory</span> for reusable code,
               <span className="text-pink-400 font-semibold"> Variable Vault</span> for data storage, 
               <span className="text-purple-400 font-semibold"> Loop Master</span> for repetition, and
-              <span className="text-amber-400 font-semibold"> If-Then Detective</span> for conditional logic!
+              <span className="text-amber-400 font-semibold"> Under One Condition</span> for if, then, else!
             </p>
           </div>
         </motion.div>

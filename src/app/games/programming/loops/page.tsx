@@ -6,8 +6,11 @@ import { useRouter } from 'next/navigation';
 import { useGameStore } from '@/store/gameStore';
 import Confetti from '@/components/Confetti';
 
+type LevelType = 'fill' | 'type';
+
 interface Level {
   id: number;
+  levelType: LevelType;
   title: string;
   story: string;
   concept: string;
@@ -19,9 +22,8 @@ interface Level {
   bonusThreshold?: number;
 }
 
-const levels: Level[] = [
+const fillLevels: Omit<Level, 'id' | 'levelType'>[] = [
   {
-    id: 1,
     title: 'First Launch',
     story: '🚀 Your rocket needs exactly 5 fuel cells to reach the moon!',
     concept: 'A loop repeats code multiple times. The number controls how many times!',
@@ -32,7 +34,6 @@ const levels: Level[] = [
     collectible: '⚡',
   },
   {
-    id: 2,
     title: 'Star Collector',
     story: '⭐ Collect exactly 8 stars to unlock the next galaxy!',
     concept: 'The loop variable "i" counts each repetition.',
@@ -43,7 +44,6 @@ const levels: Level[] = [
     collectible: '⭐',
   },
   {
-    id: 3,
     title: 'Alien Eggs',
     story: '🥚 The alien queen needs 12 eggs hatched for her babies!',
     concept: 'Loops save time - instead of writing code 12 times, write it once in a loop!',
@@ -54,7 +54,6 @@ const levels: Level[] = [
     collectible: '🥚',
   },
   {
-    id: 4,
     title: 'Countdown Launch',
     story: '🔢 Program the countdown: Start from 10 and count down to 1!',
     concept: 'Loops can count DOWN too! Use i-- to decrease.',
@@ -66,7 +65,6 @@ const levels: Level[] = [
     bonusThreshold: 10,
   },
   {
-    id: 5,
     title: 'Crystal Cave',
     story: '💎 Mine exactly 15 crystals from the asteroid belt!',
     concept: 'The condition (i < 15) tells the loop WHEN to stop.',
@@ -77,7 +75,6 @@ const levels: Level[] = [
     collectible: '💎',
   },
   {
-    id: 6,
     title: 'Double Jump',
     story: '🦘 Jump by 2s! Collect every other gem (0, 2, 4, 6, 8).',
     concept: 'Use i += 2 to skip numbers! This is called the "step".',
@@ -89,7 +86,6 @@ const levels: Level[] = [
     bonusThreshold: 5,
   },
   {
-    id: 7,
     title: 'Planet Hopper',
     story: '🪐 Visit exactly 7 planets on your space tour!',
     concept: 'Loops are perfect for repeating actions a specific number of times.',
@@ -100,7 +96,6 @@ const levels: Level[] = [
     collectible: '🪐',
   },
   {
-    id: 8,
     title: 'Meteor Shield',
     story: '☄️ Activate 20 shield units to survive the meteor storm!',
     concept: 'Master loops can handle big numbers easily!',
@@ -111,7 +106,6 @@ const levels: Level[] = [
     collectible: '🛡️',
   },
   {
-    id: 9,
     title: 'Warp Speed',
     story: '🌀 Charge the warp drive with 25 energy bursts!',
     concept: 'Loops make repetitive tasks simple and fast!',
@@ -122,7 +116,6 @@ const levels: Level[] = [
     collectible: '🌀',
   },
   {
-    id: 10,
     title: 'Galaxy Master',
     story: '🌌 The final challenge: Power up ALL 30 space stations!',
     concept: 'You\'ve mastered loops! They repeat code any number of times.',
@@ -133,6 +126,109 @@ const levels: Level[] = [
     collectible: '🏆',
   },
 ];
+
+// Type-the-loop exercises: after each loop level from level 4, kid types full loop anatomy
+const typeExercises: Omit<Level, 'id'>[] = [
+  {
+    levelType: 'type',
+    title: 'Type the loop — 12 moves',
+    story: '✍️ Make the robot move 12 times. Type the whole loop header (inside the parentheses). No robot.collect() or braces!',
+    concept: 'You type: let i = 0; i < 12; i++',
+    targetCount: 12,
+    hint: 'for (let i = 0; i < 12; i++) — type the part inside the parentheses.',
+    starterCode: '',
+    maxIterations: 20,
+    collectible: '⚡',
+  },
+  {
+    levelType: 'type',
+    title: 'Type the loop — 15 crystals',
+    story: '💎 Type a loop that runs exactly 15 times.',
+    concept: 'Same anatomy: start, condition, step.',
+    targetCount: 15,
+    hint: 'let i = 0; i < 15; i++',
+    starterCode: '',
+    maxIterations: 25,
+    collectible: '💎',
+  },
+  {
+    levelType: 'type',
+    title: 'Type the loop — Jump by 2',
+    story: '🦘 Type a loop that jumps by 2 (like Double Jump!). Collect every other item: 0, 2, 4, 6, 8 → 5 items.',
+    concept: 'Use i += 2 in the loop header.',
+    targetCount: 5,
+    hint: 'for (let i = 0; i < 10; i += 2) — type the part inside ( ).',
+    starterCode: '',
+    maxIterations: 10,
+    collectible: '💠',
+  },
+  {
+    levelType: 'type',
+    title: 'Type the loop — 7 planets',
+    story: '🪐 Type a loop that runs exactly 7 times.',
+    concept: 'for ( let i = 0; i < 7; i++ )',
+    targetCount: 7,
+    hint: 'let i = 0; i < 7; i++',
+    starterCode: '',
+    maxIterations: 15,
+    collectible: '🪐',
+  },
+  {
+    levelType: 'type',
+    title: 'Type the loop — 20 shields',
+    story: '☄️ Type a loop that runs 20 times.',
+    concept: 'Big number, same loop anatomy.',
+    targetCount: 20,
+    hint: 'let i = 0; i < 20; i++',
+    starterCode: '',
+    maxIterations: 30,
+    collectible: '🛡️',
+  },
+  {
+    levelType: 'type',
+    title: 'Tricky start — i starts at 5',
+    story: '🤔 The robot starts at position 5. Collect 5 items (positions 5, 6, 7, 8, 9). Type the loop — watch out for the start value!',
+    concept: 'let i = 5; i < 10; i++ — the loop variable can start from any number.',
+    targetCount: 5,
+    hint: 'Start at 5: let i = 5; condition must stop after 5 runs: i < 10',
+    starterCode: '',
+    maxIterations: 15,
+    collectible: '🌀',
+  },
+  {
+    levelType: 'type',
+    title: 'Type the loop — 30 stations',
+    story: '🌌 Final type challenge: type a loop that runs exactly 30 times.',
+    concept: 'You\'ve got this! for ( let i = 0; i < 30; i++ )',
+    targetCount: 30,
+    hint: 'let i = 0; i < 30; i++',
+    starterCode: '',
+    maxIterations: 40,
+    collectible: '🏆',
+  },
+];
+
+// Build full level list: fill levels 1–4, then after each fill level from 4 onward add a type exercise
+const levels: Level[] = [];
+let id = 1;
+fillLevels.forEach((f, index) => {
+  levels.push({
+    id: id++,
+    levelType: 'fill',
+    title: f.title,
+    story: f.story,
+    concept: f.concept,
+    targetCount: f.targetCount,
+    hint: f.hint,
+    starterCode: f.starterCode,
+    maxIterations: f.maxIterations,
+    collectible: f.collectible,
+    bonusThreshold: f.bonusThreshold,
+  });
+  if (index >= 3 && typeExercises[index - 3]) {
+    levels.push({ ...typeExercises[index - 3], id: id++ });
+  }
+});
 
 export default function LoopMasterGame() {
   const router = useRouter();
@@ -148,6 +244,8 @@ export default function LoopMasterGame() {
   const [characterPosition, setCharacterPosition] = useState(0);
   const [itemsOnPath, setItemsOnPath] = useState<number[]>([]);
   const [totalLoopCount, setTotalLoopCount] = useState(0);
+  const [loopStart, setLoopStart] = useState(0);
+  const [pathLength, setPathLength] = useState(0);
   const animationRef = useRef<NodeJS.Timeout | null>(null);
 
   const level = levels[currentLevelIndex];
@@ -160,37 +258,62 @@ export default function LoopMasterGame() {
     setCharacterPosition(0);
     setItemsOnPath([]);
     setTotalLoopCount(0);
+    setLoopStart(0);
+    setPathLength(0);
     if (animationRef.current) {
       clearTimeout(animationRef.current);
     }
   }, [currentLevelIndex]);
 
+  const parseLoopStart = useCallback((code: string): number => {
+    const m = code.match(/let i = (\d+)/);
+    return m ? parseInt(m[1]) : 0;
+  }, []);
+
+  const parseLoopStep = useCallback((code: string): number => {
+    if (code.includes('i += 2')) return 2;
+    if (code.includes('i += 3')) return 3;
+    if (code.includes('i--')) return -1;
+    return 1;
+  }, []);
+
   const parseLoopCount = useCallback((code: string): number => {
+    const startMatch = code.match(/let i = (\d+)/);
+    const start = startMatch ? parseInt(startMatch[1]) : 0;
+
     // Handle countdown loops
     if (code.includes('i--') || code.includes('i > 0')) {
-      const match = code.match(/let i = (\d+)/);
-      if (match) return parseInt(match[1]);
+      if (startMatch) return start; // 10, 9, ..., 1
+      return 0;
     }
-    
+
     // Handle step loops (i += 2)
     if (code.includes('i += 2')) {
       const match = code.match(/i < (\d+)/);
-      if (match) return Math.ceil(parseInt(match[1]) / 2);
+      if (match) return Math.ceil((parseInt(match[1]) - start) / 2);
+      return 0;
     }
-    
-    // Handle standard for loops
+
+    // Handle standard for loops: i < N → N - start iterations
     const match = code.match(/i < (\d+)/);
-    if (match) return parseInt(match[1]);
-    
+    if (match) return Math.max(0, parseInt(match[1]) - start);
+
     // Handle <= condition
     const matchLe = code.match(/i <= (\d+)/);
-    if (matchLe) return parseInt(matchLe[1]) + 1;
-    
+    if (matchLe) return Math.max(0, parseInt(matchLe[1]) - start + 1);
+
     return 0;
   }, []);
 
   const runLoop = useCallback(() => {
-    const fullCode = level.starterCode + userInput + (level.starterCode.includes('i-') || level.starterCode.includes('i +=') ? '' : '; i++) { }');
+    const isTypeLevel = level.levelType === 'type';
+    let fullCode: string;
+    if (isTypeLevel) {
+      const inner = userInput.replace(/^\s*for\s*\(/i, '').replace(/\s*\)\s*$/, '').trim();
+      fullCode = inner ? `for (${inner}) { }` : '';
+    } else {
+      fullCode = level.starterCode + userInput + (level.starterCode.includes('i-') || level.starterCode.includes('i +=') ? '' : '; i++) { }');
+    }
     const count = parseLoopCount(fullCode);
     
     if (count <= 0 || count > level.maxIterations) {
@@ -198,25 +321,33 @@ export default function LoopMasterGame() {
       return;
     }
 
+    const start = parseLoopStart(fullCode);
+    const step = parseLoopStep(fullCode);
+    const isCountdown = fullCode.includes('i--') || fullCode.includes('i > 0');
+    const effectiveStart = isCountdown ? 0 : start;
+    const positions = step > 1
+      ? Array.from({ length: count }, (_, i) => effectiveStart + i * step)
+      : Array.from({ length: count }, (_, i) => effectiveStart + i);
+    const pathLen = step > 1 ? (effectiveStart + (count - 1) * step + 1) : effectiveStart + count;
+    setPathLength(pathLen);
+    setLoopStart(effectiveStart);
     setIsRunning(true);
     setCollectedItems([]);
     setIterationDisplay(0);
-    setCharacterPosition(0);
+    setCharacterPosition(positions[0]);
     setTotalLoopCount(count);
-    
-    // Create items on the path
-    setItemsOnPath(Array.from({ length: count }, (_, i) => i));
+
+    setItemsOnPath(positions);
 
     let currentIteration = 0;
     const runIteration = () => {
       if (currentIteration < count) {
-        // Move character to next position
-        setCharacterPosition(currentIteration);
-        
-        // Small delay, then collect item
+        const pos = positions[currentIteration];
+        setCharacterPosition(pos);
+
         setTimeout(() => {
-          setCollectedItems(prev => [...prev, currentIteration]);
-          setItemsOnPath(prev => prev.filter(i => i !== currentIteration));
+          setCollectedItems(prev => [...prev, pos]);
+          setItemsOnPath(prev => prev.filter(i => i !== pos));
           setIterationDisplay(currentIteration + 1);
           currentIteration++;
           animationRef.current = setTimeout(runIteration, 400);
@@ -239,7 +370,7 @@ export default function LoopMasterGame() {
     };
 
     runIteration();
-  }, [level, userInput, parseLoopCount, addStars, recordAnswer, incrementGamesPlayed]);
+  }, [level, userInput, parseLoopCount, parseLoopStart, parseLoopStep, addStars, recordAnswer, incrementGamesPlayed]);
 
   const resetLevel = () => {
     setUserInput('');
@@ -249,6 +380,8 @@ export default function LoopMasterGame() {
     setCharacterPosition(0);
     setItemsOnPath([]);
     setTotalLoopCount(0);
+    setLoopStart(0);
+    setPathLength(0);
     setIsRunning(false);
     if (animationRef.current) {
       clearTimeout(animationRef.current);
@@ -263,8 +396,12 @@ export default function LoopMasterGame() {
     }
   };
 
-  // Calculate display items count for path
-  const displayCount = totalLoopCount || Math.min(level.targetCount, 12);
+  // Calculate display items count for path (include start offset so "let i = 5" shows slots 0..9)
+  const displayCount = totalLoopCount
+    ? loopStart + totalLoopCount
+    : level.levelType === 'type'
+      ? Math.max(level.targetCount, 15)
+      : Math.min(level.targetCount, 12);
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-indigo-950 via-purple-950 to-slate-900 p-4 md:p-6 relative overflow-hidden">
@@ -383,7 +520,7 @@ export default function LoopMasterGame() {
                 {Array.from({ length: displayCount }).map((_, index) => {
                   const isCollected = collectedItems.includes(index);
                   // Show item if: not collected, OR if running and still on path
-                  const shouldShowItem = !isCollected && (isRunning ? itemsOnPath.includes(index) : true);
+                  const shouldShowItem = !isCollected && (itemsOnPath.length > 0 ? itemsOnPath.includes(index) : (level.levelType === 'fill' && index < level.targetCount));
                   const isRobotHere = isRunning && characterPosition === index;
                   
                   return (
@@ -549,30 +686,59 @@ export default function LoopMasterGame() {
 
           <div className="p-4">
             <div className="bg-slate-800/50 rounded-xl p-3 font-mono text-sm">
-              <div className="text-gray-500 mb-1">// Program the robot&apos;s loop:</div>
-              <div className="flex flex-wrap items-center gap-1">
-                <span className="text-purple-400">{level.starterCode}</span>
-                {!level.starterCode.includes('i-') && !level.starterCode.includes('i +=') ? (
-                  <>
+              <div className="text-gray-500 mb-1">
+                {level.levelType === 'type'
+                  ? '// Type the loop anatomy (inside the parentheses). No robot.collect() or braces — you type the rest.'
+                  : "// Program the robot's loop:"}
+              </div>
+              {level.levelType === 'type' ? (
+                <>
+                  <div className="flex flex-wrap items-center gap-1">
+                    <span className="text-purple-400">for</span>
+                    <span className="text-gray-400">(</span>
                     <input
                       type="text"
                       value={userInput}
-                      onChange={(e) => setUserInput(e.target.value.replace(/[^0-9]/g, ''))}
-                      className="w-14 px-2 py-1 bg-purple-500/20 border border-purple-500 rounded text-purple-300 text-center font-mono focus:outline-none focus:ring-2 focus:ring-purple-400"
-                      placeholder="?"
+                      onChange={(e) => setUserInput(e.target.value)}
+                      className="flex-1 min-w-[200px] px-3 py-2 bg-slate-700 border border-cyan-500/50 rounded text-cyan-200 font-mono focus:outline-none focus:ring-2 focus:ring-cyan-400 placeholder-slate-500"
+                      placeholder="let i = 0; i < 12; i++"
                       disabled={isRunning}
-                      maxLength={3}
+                      spellCheck={false}
                     />
-                    <span className="text-gray-400">; i++) {'{'}</span>
-                  </>
-                ) : (
-                  <span className="text-gray-400">{'{'}</span>
-                )}
-              </div>
-              <div className="text-cyan-400 ml-4 my-1">
-                robot.collect({level.collectible});
-              </div>
-              <div className="text-gray-400">{'}'}</div>
+                    <span className="text-gray-400">) {'{'}</span>
+                  </div>
+                  <div className="text-cyan-400 ml-4 my-1">
+                    robot.collect({level.collectible});
+                  </div>
+                  <div className="text-gray-400">{'}'}</div>
+                </>
+              ) : (
+                <>
+                  <div className="flex flex-wrap items-center gap-1">
+                    <span className="text-purple-400">{level.starterCode}</span>
+                    {!level.starterCode.includes('i-') && !level.starterCode.includes('i +=') ? (
+                      <>
+                        <input
+                          type="text"
+                          value={userInput}
+                          onChange={(e) => setUserInput(e.target.value.replace(/[^0-9]/g, ''))}
+                          className="w-14 px-2 py-1 bg-purple-500/20 border border-purple-500 rounded text-purple-300 text-center font-mono focus:outline-none focus:ring-2 focus:ring-purple-400"
+                          placeholder="?"
+                          disabled={isRunning}
+                          maxLength={3}
+                        />
+                        <span className="text-gray-400">; i++) {'{'}</span>
+                      </>
+                    ) : (
+                      <span className="text-gray-400">{'{'}</span>
+                    )}
+                  </div>
+                  <div className="text-cyan-400 ml-4 my-1">
+                    robot.collect({level.collectible});
+                  </div>
+                  <div className="text-gray-400">{'}'}</div>
+                </>
+              )}
             </div>
 
             <div className="mt-2 text-sm text-gray-500">
@@ -584,7 +750,7 @@ export default function LoopMasterGame() {
           <div className="p-4 border-t border-slate-700 flex gap-2">
             <motion.button
               onClick={runLoop}
-              disabled={isRunning || (!userInput && !level.starterCode.includes('i-') && !level.starterCode.includes('i +='))}
+              disabled={isRunning || (level.levelType === 'type' ? !userInput.trim() : (!userInput && !level.starterCode.includes('i-') && !level.starterCode.includes('i +=')))}
               className={`flex-1 py-3 rounded-xl font-bold transition-all ${
                 isRunning
                   ? 'bg-gray-600 text-gray-400 cursor-not-allowed'

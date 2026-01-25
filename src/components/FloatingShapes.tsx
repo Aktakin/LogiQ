@@ -1,8 +1,24 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
+const MOBILE_BREAKPOINT = 768;
+
 export default function FloatingShapes() {
+  const [isMobile, setIsMobile] = useState(true);
+
+  useEffect(() => {
+    const mq = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`);
+    setIsMobile(mq.matches);
+    const fn = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mq.addEventListener('change', fn);
+    return () => mq.removeEventListener('change', fn);
+  }, []);
+
+  // On mobile: skip heavy blurred animated shapes to prevent GPU overload and crashes
+  if (isMobile) return null;
+
   const shapes = [
     { size: 300, x: '10%', y: '20%', delay: 0 },
     { size: 200, x: '70%', y: '60%', delay: 2 },
