@@ -348,7 +348,7 @@ export default function MatrixReasoningPage() {
   return (
     <main className="min-h-screen min-h-[100dvh] p-4 sm:p-6 md:p-8 relative">
       <FloatingShapes />
-      {showConfetti && <Confetti />}
+      <Confetti show={showConfetti} />
 
       <motion.header
         initial={{ opacity: 0, y: -20 }}

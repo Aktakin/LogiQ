@@ -216,7 +216,7 @@ export default function OutputOraclePage() {
   return (
     <main className="min-h-screen min-h-[100dvh] p-4 sm:p-6 md:p-8 relative">
       <FloatingShapes />
-      {showConfetti && <Confetti />}
+      <Confetti show={showConfetti} />
 
       <motion.header initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="relative z-10 mb-5 sm:mb-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
