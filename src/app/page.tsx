@@ -13,13 +13,17 @@ export default function HomePage() {
   const [tempName, setTempName] = useState(playerName);
 
   const handleStart = () => {
-    // Set default age group and go directly to dashboard
     setAgeGroup('7-9');
     if (playerName) {
       router.push('/dashboard');
     } else {
       setStep('name');
     }
+  };
+
+  const handleKidsCenter = () => {
+    setAgeGroup('7-9');
+    router.push('/kids-center');
   };
 
   const handleNameSubmit = (e: React.FormEvent) => {
@@ -37,7 +41,12 @@ export default function HomePage() {
       
       <AnimatePresence mode="wait">
         {step === 'welcome' && (
-          <WelcomeScreen key="welcome" onStart={handleStart} playerName={playerName} />
+          <WelcomeScreen
+            key="welcome"
+            onStart={handleStart}
+            onKidsCenter={handleKidsCenter}
+            playerName={playerName}
+          />
         )}
         
         {step === 'name' && (
@@ -54,7 +63,15 @@ export default function HomePage() {
   );
 }
 
-function WelcomeScreen({ onStart, playerName }: { onStart: () => void; playerName: string }) {
+function WelcomeScreen({
+  onStart,
+  onKidsCenter,
+  playerName,
+}: {
+  onStart: () => void;
+  onKidsCenter: () => void;
+  playerName: string;
+}) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -142,6 +159,20 @@ function WelcomeScreen({ onStart, playerName }: { onStart: () => void; playerNam
         className="btn-cosmic text-lg sm:text-xl px-8 sm:px-12 py-4 sm:py-5 rounded-2xl min-h-[48px] touch-target w-full sm:w-auto max-w-xs sm:max-w-none"
       >
         <span>{playerName ? 'Continue Adventure' : 'Start Adventure'} 🚀</span>
+      </motion.button>
+
+      {/* Kids Center - ages 5-9 */}
+      <motion.button
+        type="button"
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.85 }}
+        whileHover={{ scale: 1.03 }}
+        whileTap={{ scale: 0.98 }}
+        onClick={onKidsCenter}
+        className="mt-4 w-full sm:w-auto max-w-xs sm:max-w-none px-6 sm:px-8 py-3 sm:py-4 rounded-2xl min-h-[48px] touch-target font-semibold text-base sm:text-lg border-2 border-amber-400/60 bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-200 hover:from-amber-500/30 hover:to-orange-500/30 transition-colors"
+      >
+        <span>🌟 Kids Center (ages 5–9)</span>
       </motion.button>
 
       {/* Floating elements - hidden on small screens to avoid overlap */}

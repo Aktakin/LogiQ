@@ -55,22 +55,22 @@ export default function CodeTypingProject({ title, description, htmlCode, cssCod
     : '';
 
   return (
-    <main className="h-screen flex flex-col bg-slate-950 overflow-hidden">
+    <main className="min-h-screen min-h-[100dvh] flex flex-col bg-slate-950 overflow-hidden">
       {/* Top bar: Back, title, Preview button */}
-      <header className="flex-shrink-0 flex items-center justify-between gap-4 px-4 py-3 bg-slate-900/90 border-b border-slate-700">
+      <header className="flex-shrink-0 flex items-center justify-between gap-2 sm:gap-4 px-3 sm:px-4 py-2 sm:py-3 bg-slate-900/90 border-b border-slate-700 flex-wrap">
         <motion.button
           onClick={() => window.history.back()}
-          className="px-4 py-2 rounded-xl bg-white/10 border border-white/20 text-gray-300 hover:text-white text-sm"
+          className="px-3 sm:px-4 py-2.5 rounded-xl bg-white/10 border border-white/20 text-gray-300 hover:text-white text-sm min-h-[44px] touch-target"
         >
           ← Back
         </motion.button>
-        <div className="flex-1 min-w-0">
-          <h1 className="text-lg md:text-xl font-bold text-white truncate">{title}</h1>
+        <div className="flex-1 min-w-0 order-3 w-full sm:order-none sm:w-auto basis-full sm:basis-auto">
+          <h1 className="text-base sm:text-lg md:text-xl font-bold text-white truncate">{title}</h1>
           <p className="text-gray-500 text-xs truncate">{description}</p>
         </div>
         <motion.button
           onClick={() => setShowPreview(true)}
-          className="flex-shrink-0 px-4 py-2 rounded-xl bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-500"
+          className="flex-shrink-0 px-3 sm:px-4 py-2.5 rounded-xl bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-500 min-h-[44px] touch-target"
         >
           Preview
         </motion.button>
@@ -78,7 +78,7 @@ export default function CodeTypingProject({ title, description, htmlCode, cssCod
 
       {/* Full-screen JavaScript typing area */}
       <div className="flex-1 min-h-0 overflow-auto bg-slate-900/50">
-        <div className="p-4 md:p-6 max-w-4xl mx-auto">
+        <div className="p-3 sm:p-4 md:p-6 max-w-4xl mx-auto">
           <div className="relative inline-block min-w-full">
             <pre
               className="m-0 whitespace-pre text-base leading-relaxed pointer-events-none select-none pr-4"

@@ -206,15 +206,15 @@ export default function MemoryMatchGame() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-indigo-950 via-purple-950 to-slate-900 p-4 md:p-6 relative overflow-hidden">
+    <main className="min-h-screen min-h-[100dvh] bg-gradient-to-b from-indigo-950 via-purple-950 to-slate-900 p-3 sm:p-4 md:p-6 relative overflow-hidden">
       <Confetti show={showConfetti} />
 
       {/* Header */}
-      <header className="max-w-4xl mx-auto mb-4 relative z-10">
-        <div className="flex items-center justify-between flex-wrap gap-3">
+      <header className="max-w-4xl mx-auto mb-3 sm:mb-4 relative z-10">
+        <div className="flex items-center justify-between flex-wrap gap-2 sm:gap-3">
           <motion.button
             onClick={() => router.push('/dashboard')}
-            className="px-4 py-2 rounded-xl bg-white/10 border border-white/20 text-gray-300 hover:text-white transition-all text-sm backdrop-blur"
+            className="px-4 py-2.5 rounded-xl bg-white/10 border border-white/20 text-gray-300 hover:text-white transition-all text-sm backdrop-blur min-h-[44px] touch-target"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
@@ -222,7 +222,7 @@ export default function MemoryMatchGame() {
           </motion.button>
           
           {gameState === 'playing' && (
-            <div className="flex gap-3">
+            <div className="flex gap-2 sm:gap-3 flex-wrap justify-end">
               <div className="bg-white/10 backdrop-blur rounded-xl px-4 py-2 border border-white/20">
                 <span className="text-gray-400 text-sm">Moves: </span>
                 <span className="text-white font-bold">{moves}</span>
@@ -249,16 +249,16 @@ export default function MemoryMatchGame() {
       <div className="max-w-4xl mx-auto relative z-10">
         {/* Title */}
         <motion.div
-          className="text-center mb-4"
+          className="text-center mb-3 sm:mb-4"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <h1 className="text-2xl md:text-3xl font-bold mb-1">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-1 px-1">
             <span className="bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent">
               🧠 Memory Match 🎴
             </span>
           </h1>
-          <p className="text-purple-300/80 text-sm">
+          <p className="text-purple-300/80 text-xs sm:text-sm">
             {gameState === 'playing' 
               ? `Level ${level}: ${currentLevel.name}` 
               : 'Find all matching pairs!'
@@ -276,7 +276,7 @@ export default function MemoryMatchGame() {
           {/* Playing State - Card Grid */}
           {gameState === 'playing' && (
             <div 
-              className="grid gap-2 md:gap-3 justify-center"
+              className="grid gap-1.5 sm:gap-2 md:gap-3 justify-center"
               style={{ 
                 gridTemplateColumns: `repeat(${currentLevel.cols}, minmax(0, 1fr))`,
               }}
@@ -286,8 +286,8 @@ export default function MemoryMatchGame() {
                   key={card.id}
                   onClick={() => handleCardClick(card.id)}
                   className={`
-                    aspect-square rounded-xl text-3xl md:text-4xl flex items-center justify-center
-                    transition-all duration-200 cursor-pointer
+                    aspect-square rounded-xl text-2xl sm:text-3xl md:text-4xl flex items-center justify-center
+                    transition-all duration-200 cursor-pointer touch-target
                     ${card.isMatched 
                       ? 'bg-green-500/30 border-2 border-green-500/50' 
                       : card.isFlipped 
@@ -295,7 +295,7 @@ export default function MemoryMatchGame() {
                         : 'bg-gradient-to-br from-indigo-600 to-purple-700 border-2 border-indigo-400/50 hover:border-indigo-300'
                     }
                   `}
-                  style={{ minWidth: 50, minHeight: 50 }}
+                  style={{ minWidth: 44, minHeight: 44 }}
                   whileHover={!card.isFlipped && !card.isMatched ? { scale: 1.05 } : {}}
                   whileTap={!card.isFlipped && !card.isMatched ? { scale: 0.95 } : {}}
                   animate={{
@@ -372,7 +372,7 @@ export default function MemoryMatchGame() {
                       key={lvl.id}
                       onClick={() => setLevel(lvl.id)}
                       className={`
-                        p-3 rounded-xl font-medium transition-all text-center
+                        p-2 sm:p-3 rounded-xl font-medium transition-all text-center min-h-[52px] touch-target
                         ${level === lvl.id
                           ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white border-2 border-green-400'
                           : 'bg-white/10 text-gray-300 hover:bg-white/20 border-2 border-transparent'
@@ -381,9 +381,9 @@ export default function MemoryMatchGame() {
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                     >
-                      <div className="text-lg font-bold">{lvl.id}</div>
-                      <div className="text-xs opacity-80">{lvl.name}</div>
-                      {lvl.timeLimit && <div className="text-xs text-yellow-400">⏱️ {lvl.timeLimit}s</div>}
+                      <div className="text-base sm:text-lg font-bold">{lvl.id}</div>
+                      <div className="text-[10px] sm:text-xs opacity-80 truncate">{lvl.name}</div>
+                      {lvl.timeLimit && <div className="text-[10px] sm:text-xs text-yellow-400">⏱️ {lvl.timeLimit}s</div>}
                     </motion.button>
                   ))}
                 </div>
@@ -403,7 +403,7 @@ export default function MemoryMatchGame() {
               <div>
                 <motion.button
                   onClick={() => initializeGame(level)}
-                  className="px-8 py-3 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold text-lg"
+                  className="px-6 sm:px-8 py-3 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold text-base sm:text-lg min-h-[48px] touch-target"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
@@ -433,10 +433,10 @@ export default function MemoryMatchGame() {
               <div className="text-yellow-400 text-xl mb-4">
                 ⭐ +{Math.max(1, 4 - Math.floor(moves / currentLevel.gridSize))} Stars!
               </div>
-              <div className="flex gap-3 justify-center">
+              <div className="flex flex-wrap gap-2 sm:gap-3 justify-center">
                 <motion.button
                   onClick={() => initializeGame(level)}
-                  className="px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold"
+                  className="px-5 sm:px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold min-h-[48px] touch-target"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
@@ -444,7 +444,7 @@ export default function MemoryMatchGame() {
                 </motion.button>
                 <motion.button
                   onClick={() => setGameState('menu')}
-                  className="px-6 py-3 rounded-xl bg-white/10 border border-white/20 text-white font-bold"
+                  className="px-5 sm:px-6 py-3 rounded-xl bg-white/10 border border-white/20 text-white font-bold min-h-[48px] touch-target"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
@@ -456,22 +456,22 @@ export default function MemoryMatchGame() {
 
           {/* Lost State (Timed Out) */}
           {gameState === 'lost' && (
-            <div className="py-8 text-center">
+            <div className="py-6 sm:py-8 text-center">
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                className="text-6xl mb-4"
+                className="text-5xl sm:text-6xl mb-4"
               >
                 ⏰
               </motion.div>
-              <div className="text-red-400 text-2xl font-bold mb-2">Time&apos;s Up!</div>
-              <div className="text-white text-lg mb-4">
+              <div className="text-red-400 text-xl sm:text-2xl font-bold mb-2">Time&apos;s Up!</div>
+              <div className="text-white text-base sm:text-lg mb-4">
                 You found <span className="text-green-400 font-bold">{matches}</span> of {currentLevel.gridSize} pairs
               </div>
-              <div className="flex gap-3 justify-center">
+              <div className="flex flex-wrap gap-2 sm:gap-3 justify-center">
                 <motion.button
                   onClick={() => initializeGame(level)}
-                  className="px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold"
+                  className="px-5 sm:px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold min-h-[48px] touch-target"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
@@ -479,7 +479,7 @@ export default function MemoryMatchGame() {
                 </motion.button>
                 <motion.button
                   onClick={() => setGameState('menu')}
-                  className="px-6 py-3 rounded-xl bg-white/10 border border-white/20 text-white font-bold"
+                  className="px-5 sm:px-6 py-3 rounded-xl bg-white/10 border border-white/20 text-white font-bold min-h-[48px] touch-target"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >

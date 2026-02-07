@@ -478,13 +478,13 @@ export default function FunctionsGame() {
   const cellSize = level.gridSize <= 6 ? 50 : 40;
 
   return (
-    <main className="min-h-screen p-4 md:p-6 relative overflow-hidden">
+    <main className="min-h-screen min-h-[100dvh] p-3 sm:p-4 md:p-6 relative overflow-hidden">
       <FloatingShapes />
       <Confetti show={showConfetti} />
 
       <motion.header initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="relative z-10 mb-4">
         <div className="flex items-center justify-between flex-wrap gap-2">
-          <motion.button onClick={() => router.push('/games/programming')} className="glass px-3 py-2 rounded-xl text-gray-300 hover:text-white transition-colors text-sm" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>← Back</motion.button>
+          <motion.button onClick={() => router.push('/games/programming')} className="glass px-3 py-2.5 rounded-xl text-gray-300 hover:text-white transition-colors text-sm min-h-[44px] touch-target" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>← Back</motion.button>
           <div className="flex items-center gap-3">
             <div className="glass px-3 py-1.5 rounded-xl text-center">
               <div className="text-xs text-gray-400">Level</div>

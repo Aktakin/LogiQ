@@ -130,7 +130,7 @@ export default function PatternsGame() {
   const gameComplete = round > totalRounds || (round === totalRounds && isCorrect !== null);
 
   return (
-    <main className="min-h-screen p-6 md:p-10 relative">
+    <main className="min-h-screen min-h-[100dvh] p-3 sm:p-6 md:p-10 relative">
       <FloatingShapes />
       <Confetti show={showConfetti} />
 
@@ -138,30 +138,30 @@ export default function PatternsGame() {
       <motion.header
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative z-10 mb-8"
+        className="relative z-10 mb-4 sm:mb-8"
       >
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-2 sm:gap-3">
           <motion.button
             onClick={() => router.push('/dashboard')}
-            className="glass px-4 py-2 rounded-xl text-gray-300 hover:text-white transition-colors"
+            className="glass px-4 py-2.5 rounded-xl text-gray-300 hover:text-white transition-colors min-h-[44px] touch-target"
             whileHover={{ scale: 1.05, x: -4 }}
             whileTap={{ scale: 0.95 }}
           >
             ← Back
           </motion.button>
 
-          <div className="flex items-center gap-6">
-            <div className="glass px-4 py-2 rounded-xl text-center">
+          <div className="flex items-center gap-2 sm:gap-6">
+            <div className="glass px-3 sm:px-4 py-2 rounded-xl text-center">
               <div className="text-xs text-gray-400">Round</div>
-              <div className="text-lg font-bold text-white">{Math.min(round, totalRounds)}/{totalRounds}</div>
+              <div className="text-sm sm:text-lg font-bold text-white">{Math.min(round, totalRounds)}/{totalRounds}</div>
             </div>
-            <div className="glass px-4 py-2 rounded-xl text-center">
+            <div className="glass px-3 sm:px-4 py-2 rounded-xl text-center">
               <div className="text-xs text-gray-400">Score</div>
-              <div className="text-lg font-bold text-yellow-400">⭐ {score}</div>
+              <div className="text-sm sm:text-lg font-bold text-yellow-400">⭐ {score}</div>
             </div>
-            <div className="glass px-4 py-2 rounded-xl text-center">
+            <div className="glass px-3 sm:px-4 py-2 rounded-xl text-center">
               <div className="text-xs text-gray-400">Streak</div>
-              <div className="text-lg font-bold text-orange-400">🔥 {streak}</div>
+              <div className="text-sm sm:text-lg font-bold text-orange-400">🔥 {streak}</div>
             </div>
           </div>
         </div>
@@ -178,17 +178,17 @@ export default function PatternsGame() {
           >
             {/* Title */}
             <motion.div
-              className="text-center mb-10"
+              className="text-center mb-6 sm:mb-10"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
             >
-              <h1 className="text-4xl font-bold text-white mb-2">🎨 Pattern Quest</h1>
-              <p className="text-gray-400 text-lg">Find the missing shape in the pattern!</p>
+              <h1 className="text-2xl sm:text-4xl font-bold text-white mb-2 px-1">🎨 Pattern Quest</h1>
+              <p className="text-gray-400 text-sm sm:text-lg">Find the missing shape in the pattern!</p>
             </motion.div>
 
             {/* Pattern Display */}
             <motion.div
-              className="glass rounded-3xl p-8 mb-8"
+              className="glass rounded-3xl p-4 sm:p-8 mb-6 sm:mb-8"
               initial={{ scale: 0.9 }}
               animate={{ scale: 1 }}
             >

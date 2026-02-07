@@ -404,7 +404,7 @@ export default function LoopMasterGame() {
       : Math.min(level.targetCount, 12);
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-indigo-950 via-purple-950 to-slate-900 p-4 md:p-6 relative overflow-hidden">
+    <main className="min-h-screen min-h-[100dvh] bg-gradient-to-b from-indigo-950 via-purple-950 to-slate-900 p-3 sm:p-4 md:p-6 relative overflow-hidden">
       <Confetti show={showConfetti} />
 
       {/* Animated stars background */}
@@ -435,7 +435,7 @@ export default function LoopMasterGame() {
         <div className="flex items-center justify-between flex-wrap gap-3">
           <motion.button
             onClick={() => router.push('/games/programming')}
-            className="px-4 py-2 rounded-xl bg-white/10 border border-white/20 text-gray-300 hover:text-white transition-all text-sm backdrop-blur"
+            className="px-4 py-2.5 rounded-xl bg-white/10 border border-white/20 text-gray-300 hover:text-white transition-all text-sm backdrop-blur min-h-[44px] touch-target"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >

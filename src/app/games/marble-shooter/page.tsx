@@ -570,27 +570,27 @@ export default function MarbleShooterGame() {
   
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-indigo-950 via-purple-950 to-slate-900 p-4 md:p-6 relative overflow-hidden">
+    <main className="min-h-screen min-h-[100dvh] bg-gradient-to-b from-indigo-950 via-purple-950 to-slate-900 p-3 sm:p-4 md:p-6 relative overflow-hidden">
       <Confetti show={showConfetti} />
 
       {/* Header */}
-      <header className="max-w-4xl mx-auto mb-4 relative z-10">
-        <div className="flex items-center justify-between flex-wrap gap-3">
+      <header className="max-w-4xl mx-auto mb-3 sm:mb-4 relative z-10">
+        <div className="flex items-center justify-between flex-wrap gap-2 sm:gap-3">
           <motion.button
             onClick={() => router.push('/dashboard')}
-            className="px-4 py-2 rounded-xl bg-white/10 border border-white/20 text-gray-300 hover:text-white transition-all text-sm backdrop-blur"
+            className="px-4 py-2.5 rounded-xl bg-white/10 border border-white/20 text-gray-300 hover:text-white transition-all text-sm backdrop-blur min-h-[44px] touch-target"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
             ← Back
           </motion.button>
-          <div className="flex gap-3">
-            <div className="bg-white/10 backdrop-blur rounded-xl px-4 py-2 border border-white/20">
-              <span className="text-gray-400 text-sm">Score: </span>
+          <div className="flex gap-2 sm:gap-3 flex-wrap">
+            <div className="bg-white/10 backdrop-blur rounded-xl px-3 sm:px-4 py-2 border border-white/20">
+              <span className="text-gray-400 text-xs sm:text-sm">Score: </span>
               <span className="text-white font-bold">{score}</span>
             </div>
-            <div className="bg-white/10 backdrop-blur rounded-xl px-4 py-2 border border-white/20">
-              <span className="text-gray-400 text-sm">Best: </span>
+            <div className="bg-white/10 backdrop-blur rounded-xl px-3 sm:px-4 py-2 border border-white/20">
+              <span className="text-gray-400 text-xs sm:text-sm">Best: </span>
               <span className="text-yellow-400 font-bold">{highScore}</span>
             </div>
             {combo > 1 && (
@@ -646,7 +646,7 @@ export default function MarbleShooterGame() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center backdrop-blur-sm overflow-y-auto py-4"
+                className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center backdrop-blur-sm overflow-y-auto p-4 py-4"
               >
                 {gameState === 'won' && (
                   <>
@@ -659,11 +659,11 @@ export default function MarbleShooterGame() {
                     </motion.div>
                     <div className="text-green-400 text-2xl font-bold mb-1">Level {level} Complete!</div>
                     <div className="text-white text-lg mb-4">Score: {score}</div>
-                    <div className="flex gap-3">
+                    <div className="flex flex-wrap gap-2 sm:gap-3 justify-center">
                       {level < LEVEL_CONFIG.length && (
                         <motion.button
                           onClick={nextLevel}
-                          className="px-6 py-3 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold"
+                          className="px-5 sm:px-6 py-3 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold min-h-[48px] touch-target"
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
                         >
@@ -672,7 +672,7 @@ export default function MarbleShooterGame() {
                       )}
                       <motion.button
                         onClick={() => setGameState('menu')}
-                        className="px-6 py-3 rounded-xl bg-white/10 border border-white/20 text-white font-bold"
+                        className="px-5 sm:px-6 py-3 rounded-xl bg-white/10 border border-white/20 text-white font-bold min-h-[48px] touch-target"
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                       >
@@ -686,16 +686,16 @@ export default function MarbleShooterGame() {
                     <motion.div
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
-                      className="text-5xl mb-3"
+                      className="text-4xl sm:text-5xl mb-3"
                     >
                       💥
                     </motion.div>
-                    <div className="text-red-400 text-2xl font-bold mb-1">Game Over!</div>
-                    <div className="text-white text-lg mb-4">Final Score: {score}</div>
-                    <div className="flex gap-3">
+                    <div className="text-red-400 text-xl sm:text-2xl font-bold mb-1">Game Over!</div>
+                    <div className="text-white text-base sm:text-lg mb-4">Final Score: {score}</div>
+                    <div className="flex flex-wrap gap-2 sm:gap-3 justify-center">
                       <motion.button
                         onClick={() => startGame(level)}
-                        className="px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold"
+                        className="px-5 sm:px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold min-h-[48px] touch-target"
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                       >
@@ -703,7 +703,7 @@ export default function MarbleShooterGame() {
                       </motion.button>
                       <motion.button
                         onClick={() => setGameState('menu')}
-                        className="px-6 py-3 rounded-xl bg-white/10 border border-white/20 text-white font-bold"
+                        className="px-5 sm:px-6 py-3 rounded-xl bg-white/10 border border-white/20 text-white font-bold min-h-[48px] touch-target"
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                       >
@@ -717,14 +717,14 @@ export default function MarbleShooterGame() {
                     <motion.div
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
-                      className="text-5xl mb-2"
+                      className="text-4xl sm:text-5xl mb-2"
                     >
                       🐸
                     </motion.div>
-                    <div className="text-white text-xl font-bold mb-4">Select Level</div>
+                    <div className="text-white text-lg sm:text-xl font-bold mb-3 sm:mb-4">Select Level</div>
                     
                     {/* Level Grid */}
-                    <div className="grid grid-cols-5 gap-2 mb-4 px-4">
+                    <div className="grid grid-cols-5 gap-1.5 sm:gap-2 mb-3 sm:mb-4 px-2 sm:px-4">
                       {LEVEL_CONFIG.map((config, index) => {
                         const lvl = index + 1;
                         const isUnlocked = lvl <= unlockedLevels;
@@ -736,7 +736,7 @@ export default function MarbleShooterGame() {
                             onClick={() => isUnlocked && startGame(lvl)}
                             disabled={!isUnlocked}
                             className={`
-                              w-14 h-14 rounded-xl font-bold text-lg flex flex-col items-center justify-center
+                              w-12 h-12 sm:w-14 sm:h-14 rounded-xl font-bold text-base sm:text-lg flex flex-col items-center justify-center touch-target
                               transition-all border-2
                               ${isUnlocked 
                                 ? isCurrent
@@ -755,8 +755,8 @@ export default function MarbleShooterGame() {
                     </div>
                     
                     {/* Level Info */}
-                    <div className="bg-white/10 rounded-xl px-6 py-3 mb-4 text-center">
-                      <div className="text-purple-300 text-sm">Level {level}: {LEVEL_CONFIG[level - 1]?.name}</div>
+                    <div className="bg-white/10 rounded-xl px-4 sm:px-6 py-3 mb-3 sm:mb-4 text-center">
+                      <div className="text-purple-300 text-xs sm:text-sm">Level {level}: {LEVEL_CONFIG[level - 1]?.name}</div>
                       <div className="text-gray-400 text-xs mt-1">
                         {LEVEL_CONFIG[level - 1]?.marbles} marbles • {LEVEL_CONFIG[level - 1]?.colors} colors
                       </div>
@@ -764,7 +764,7 @@ export default function MarbleShooterGame() {
                     
                     <motion.button
                       onClick={() => startGame(level)}
-                      className="px-8 py-3 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold text-lg"
+                      className="px-6 sm:px-8 py-3 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold text-base sm:text-lg min-h-[48px] touch-target"
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                     >

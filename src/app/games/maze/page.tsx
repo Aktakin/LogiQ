@@ -327,12 +327,12 @@ export default function MazeGame() {
 
         {/* Maze */}
         <motion.div
-          className="flex justify-center mb-6"
+          className="flex justify-center mb-4 sm:mb-6 overflow-x-auto"
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
         >
           <div
-            className="relative bg-slate-900/80 rounded-2xl p-4 border-2 border-purple-500/30"
+            className="relative bg-slate-900/80 rounded-2xl p-3 sm:p-4 border-2 border-purple-500/30"
             style={{ 
               width: mazeWidth + 32,
               height: mazeHeight + 32,
@@ -413,15 +413,16 @@ export default function MazeGame() {
 
         {/* Mobile Controls */}
         <motion.div
-          className="glass rounded-2xl p-4"
+          className="glass rounded-2xl p-3 sm:p-4"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
           <div className="flex items-center justify-between mb-3">
             <span className="text-gray-400 text-sm">Controls</span>
             <button
+              type="button"
               onClick={() => setShowControls(!showControls)}
-              className="text-gray-400 hover:text-white text-sm"
+              className="text-gray-400 hover:text-white text-sm min-h-[44px] touch-target flex items-center"
             >
               {showControls ? 'Hide' : 'Show'}
             </button>
@@ -430,8 +431,9 @@ export default function MazeGame() {
           {showControls && (
             <div className="flex flex-col items-center gap-2">
               <motion.button
+                type="button"
                 onClick={() => handleMove('up')}
-                className="w-16 h-12 rounded-xl bg-gradient-to-b from-cyan-500/30 to-cyan-600/30 border border-cyan-500/50 text-white font-bold text-xl"
+                className="w-14 h-12 sm:w-16 sm:h-12 rounded-xl bg-gradient-to-b from-cyan-500/30 to-cyan-600/30 border border-cyan-500/50 text-white font-bold text-xl touch-target"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -439,24 +441,27 @@ export default function MazeGame() {
               </motion.button>
               <div className="flex gap-2">
                 <motion.button
+                  type="button"
                   onClick={() => handleMove('left')}
-                  className="w-16 h-12 rounded-xl bg-gradient-to-b from-purple-500/30 to-purple-600/30 border border-purple-500/50 text-white font-bold text-xl"
+                  className="w-14 h-12 sm:w-16 sm:h-12 rounded-xl bg-gradient-to-b from-purple-500/30 to-purple-600/30 border border-purple-500/50 text-white font-bold text-xl touch-target"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
                   ←
                 </motion.button>
                 <motion.button
+                  type="button"
                   onClick={() => handleMove('down')}
-                  className="w-16 h-12 rounded-xl bg-gradient-to-b from-cyan-500/30 to-cyan-600/30 border border-cyan-500/50 text-white font-bold text-xl"
+                  className="w-14 h-12 sm:w-16 sm:h-12 rounded-xl bg-gradient-to-b from-cyan-500/30 to-cyan-600/30 border border-cyan-500/50 text-white font-bold text-xl touch-target"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
                   ↓
                 </motion.button>
                 <motion.button
+                  type="button"
                   onClick={() => handleMove('right')}
-                  className="w-16 h-12 rounded-xl bg-gradient-to-b from-purple-500/30 to-purple-600/30 border border-purple-500/50 text-white font-bold text-xl"
+                  className="w-14 h-12 sm:w-16 sm:h-12 rounded-xl bg-gradient-to-b from-purple-500/30 to-purple-600/30 border border-purple-500/50 text-white font-bold text-xl touch-target"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
@@ -477,12 +482,12 @@ export default function MazeGame() {
               exit={{ opacity: 0 }}
               className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
             >
-              <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.9, opacity: 0 }}
-                className="glass rounded-3xl p-8 max-w-md text-center"
-              >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="glass rounded-3xl p-4 sm:p-8 max-w-md w-full mx-4 text-center"
+            >
                 <motion.div
                   animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.1, 1] }}
                   transition={{ duration: 1, repeat: Infinity }}

@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { useGameStore } from '@/store/gameStore';
 import FloatingShapes from '@/components/FloatingShapes';
 
-type TabType = 'code-quest' | 'games' | 'programming';
+type TabType = 'code-quest' | 'logic-builders' | 'games' | 'programming';
 
 interface GameItem {
   id: string;
@@ -98,6 +98,109 @@ const codeQuestGames: GameItem[] = [
   },
 ];
 
+const logicBuildersGames: GameItem[] = [
+  {
+    id: 'matrix-reasoning',
+    title: 'Matrix Mind',
+    description: 'Complete visual matrices to spot abstract rules and patterns.',
+    icon: '🧩',
+    href: '/games/logic-builders/matrix-reasoning',
+    color: '#8b5cf6',
+    tags: ['Matrix', 'Abstract'],
+    isNew: true,
+  },
+  {
+    id: 'analogy-lab',
+    title: 'Analogy Lab',
+    description: 'A is to B as C is to ? Map relationships and transform shapes.',
+    icon: '🔗',
+    href: '/games/logic-builders/analogy-lab',
+    color: '#06b6d4',
+    tags: ['Analogy', 'Mapping'],
+    isNew: true,
+  },
+  {
+    id: 'transitive-trails',
+    title: 'Transitive Trails',
+    description: 'Use “A > B > C” clues to infer the hidden order.',
+    icon: '🧭',
+    href: '/games/logic-builders/transitive-trails',
+    color: '#10b981',
+    tags: ['Inference', 'Order'],
+    isNew: true,
+  },
+  {
+    id: 'rule-switch',
+    title: 'Rule Switch',
+    description: 'Sort cards by the rule — then adapt when the rule changes.',
+    icon: '🔀',
+    href: '/games/logic-builders/rule-switch',
+    color: '#f59e0b',
+    tags: ['Flexibility', 'Attention'],
+    isNew: true,
+  },
+  {
+    id: 'syllogism-snap',
+    title: 'Syllogism Snap',
+    description: 'Pick the conclusion that must be true from simple statements.',
+    icon: '✅',
+    href: '/games/logic-builders/syllogism-snap',
+    color: '#ec4899',
+    tags: ['Deduction', 'Reasoning'],
+    isNew: true,
+  },
+  {
+    id: 'truth-gates',
+    title: 'Truth Gates',
+    description: 'Feed shapes through AND, OR, NOT gates and predict the output!',
+    icon: '⚡',
+    href: '/games/logic-builders/truth-gates',
+    color: '#f59e0b',
+    tags: ['Boolean', 'Gates'],
+    isNew: true,
+  },
+  {
+    id: 'loop-lab',
+    title: 'Loop Lab',
+    description: 'How many shapes does the loop create? Count and predict!',
+    icon: '🔄',
+    href: '/games/logic-builders/loop-lab',
+    color: '#3b82f6',
+    tags: ['Loops', 'Counting'],
+    isNew: true,
+  },
+  {
+    id: 'output-oracle',
+    title: 'Output Oracle',
+    description: 'Read the code, pick the shapes it produces!',
+    icon: '🔮',
+    href: '/games/logic-builders/output-oracle',
+    color: '#8b5cf6',
+    tags: ['Code Reading', 'Prediction'],
+    isNew: true,
+  },
+  {
+    id: 'shape-sorter',
+    title: 'Shape Sorter',
+    description: 'Filter shapes with JS conditions — which ones pass?',
+    icon: '🗂️',
+    href: '/games/logic-builders/shape-sorter',
+    color: '#06b6d4',
+    tags: ['Filter', 'Arrays'],
+    isNew: true,
+  },
+  {
+    id: 'color-coder',
+    title: 'Color Coder',
+    description: 'Trace color variables through code — what color is the result?',
+    icon: '🎨',
+    href: '/games/logic-builders/color-coder',
+    color: '#ec4899',
+    tags: ['Variables', 'Tracing'],
+    isNew: true,
+  },
+];
+
 const funGames: GameItem[] = [
   {
     id: 'dino',
@@ -175,6 +278,7 @@ const programmingProjects: GameItem[] = [
 
 const tabs = [
   { id: 'code-quest' as TabType, label: 'Code Quest', icon: '💻', color: '#8b5cf6' },
+  { id: 'logic-builders' as TabType, label: 'Logic Builders', icon: '🧩', color: '#a855f7' },
   { id: 'games' as TabType, label: 'Games', icon: '🎮', color: '#06b6d4' },
   { id: 'programming' as TabType, label: 'Programming', icon: '⌨️', color: '#f59e0b' },
 ];
@@ -196,6 +300,7 @@ export default function DashboardPage() {
   const getGamesForTab = (tab: TabType): GameItem[] => {
     switch (tab) {
       case 'code-quest': return codeQuestGames;
+      case 'logic-builders': return logicBuildersGames;
       case 'games': return funGames;
       case 'programming': return programmingProjects;
     }
@@ -294,6 +399,35 @@ export default function DashboardPage() {
           </span>
         </div>
 
+        {activeTab === 'logic-builders' && (
+          <div className="mb-4 sm:mb-6 glass rounded-2xl p-4 sm:p-5 border border-purple-500/30">
+            <div className="flex items-start gap-3">
+              <div className="text-2xl sm:text-3xl">🧠</div>
+              <div className="min-w-0">
+                <h3 className="text-white font-semibold text-sm sm:text-base mb-1">
+                  Research-backed logic assessments
+                </h3>
+                <p className="text-gray-400 text-xs sm:text-sm">
+                  These assessments are inspired by cognitive science tasks that build
+                  abstract reasoning, analogical mapping, transitive inference,
+                  cognitive flexibility, and syllogistic deduction.
+                </p>
+                <div className="flex flex-wrap gap-2 mt-3">
+                  {['Matrix reasoning', 'Analogies', 'Transitive inference', 'Rule switching', 'Syllogisms'].map((tag) => (
+                    <span
+                      key={tag}
+                      className="px-2 py-0.5 rounded-full text-xs text-purple-200"
+                      style={{ backgroundColor: 'rgba(168, 85, 247, 0.2)' }}
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Games Grid */}
         <AnimatePresence mode="wait">
           <motion.div
@@ -302,12 +436,10 @@ export default function DashboardPage() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
-            className={`grid gap-4 ${
-              activeTab === 'code-quest' 
-                ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' 
-                : activeTab === 'games'
-                  ? 'grid-cols-1 md:grid-cols-2'
-                  : 'grid-cols-1 md:grid-cols-2'
+            className={`grid gap-3 sm:gap-4 ${
+              activeTab === 'code-quest' || activeTab === 'logic-builders'
+                ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
+                : 'grid-cols-1 sm:grid-cols-2'
             }`}
           >
             {currentGames.map((game, index) => (

@@ -177,7 +177,7 @@ export default function SequencesGame() {
   const gameComplete = round > totalRounds || (round === totalRounds && isCorrect !== null);
 
   return (
-    <main className="min-h-screen p-6 md:p-10 relative">
+    <main className="min-h-screen min-h-[100dvh] p-3 sm:p-6 md:p-10 relative">
       <FloatingShapes />
       <Confetti show={showConfetti} />
 
@@ -185,30 +185,30 @@ export default function SequencesGame() {
       <motion.header
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative z-10 mb-8"
+        className="relative z-10 mb-4 sm:mb-8"
       >
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-2 sm:gap-3">
           <motion.button
             onClick={() => router.push('/dashboard')}
-            className="glass px-4 py-2 rounded-xl text-gray-300 hover:text-white transition-colors"
+            className="glass px-4 py-2.5 rounded-xl text-gray-300 hover:text-white transition-colors min-h-[44px] touch-target"
             whileHover={{ scale: 1.05, x: -4 }}
             whileTap={{ scale: 0.95 }}
           >
             ← Back
           </motion.button>
 
-          <div className="flex items-center gap-6">
-            <div className="glass px-4 py-2 rounded-xl text-center">
+          <div className="flex items-center gap-2 sm:gap-6">
+            <div className="glass px-3 sm:px-4 py-2 rounded-xl text-center">
               <div className="text-xs text-gray-400">Round</div>
-              <div className="text-lg font-bold text-white">{Math.min(round, totalRounds)}/{totalRounds}</div>
+              <div className="text-sm sm:text-lg font-bold text-white">{Math.min(round, totalRounds)}/{totalRounds}</div>
             </div>
-            <div className="glass px-4 py-2 rounded-xl text-center">
+            <div className="glass px-3 sm:px-4 py-2 rounded-xl text-center">
               <div className="text-xs text-gray-400">Score</div>
-              <div className="text-lg font-bold text-yellow-400">⭐ {score}</div>
+              <div className="text-sm sm:text-lg font-bold text-yellow-400">⭐ {score}</div>
             </div>
-            <div className="glass px-4 py-2 rounded-xl text-center">
+            <div className="glass px-3 sm:px-4 py-2 rounded-xl text-center">
               <div className="text-xs text-gray-400">Streak</div>
-              <div className="text-lg font-bold text-orange-400">🔥 {streak}</div>
+              <div className="text-sm sm:text-lg font-bold text-orange-400">🔥 {streak}</div>
             </div>
           </div>
         </div>
@@ -224,13 +224,13 @@ export default function SequencesGame() {
             className="max-w-4xl mx-auto relative z-10"
           >
             {/* Title */}
-            <motion.div className="text-center mb-10">
-              <h1 className="text-4xl font-bold text-white mb-2">🔢 Sequence Master</h1>
-              <p className="text-gray-400 text-lg">What number comes next in the pattern?</p>
+            <motion.div className="text-center mb-6 sm:mb-10">
+              <h1 className="text-2xl sm:text-4xl font-bold text-white mb-2 px-1">🔢 Sequence Master</h1>
+              <p className="text-gray-400 text-sm sm:text-lg">What number comes next in the pattern?</p>
             </motion.div>
 
             {/* Sequence Display */}
-            <motion.div className="glass rounded-3xl p-8 mb-8">
+            <motion.div className="glass rounded-3xl p-4 sm:p-8 mb-6 sm:mb-8">
               <div className="flex justify-center items-center gap-2 md:gap-4 flex-wrap">
                 {sequence.numbers.map((num, index) => (
                   <motion.div
@@ -324,7 +324,7 @@ export default function SequencesGame() {
                     transition={{ delay: 0.6 + index * 0.1 }}
                     whileHover={selected === null ? { scale: 1.1, y: -5 } : {}}
                     whileTap={selected === null ? { scale: 0.9 } : {}}
-                    className={`w-20 h-20 md:w-24 md:h-24 rounded-2xl text-3xl font-bold flex items-center justify-center transition-all ${
+                    className={`w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-2xl text-2xl sm:text-3xl font-bold flex items-center justify-center transition-all touch-target ${
                       selected === option
                         ? isCorrect
                           ? 'bg-green-500/30 border-2 border-green-400 text-green-400 glow-green'
@@ -387,12 +387,12 @@ export default function SequencesGame() {
                 </motion.p>
               )}
             </div>
-            <div className="flex gap-4 justify-center">
+            <div className="flex flex-wrap gap-2 sm:gap-4 justify-center">
               <motion.button
                 onClick={() => { setRound(1); setScore(0); setStreak(0); generateNewSequence(); }}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="glass px-6 py-3 rounded-xl text-white"
+                className="glass px-5 sm:px-6 py-3 rounded-xl text-white min-h-[48px] touch-target"
               >
                 🔄 Play Again
               </motion.button>

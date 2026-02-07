@@ -2,7 +2,24 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 export type AgeGroup = '4-6' | '7-9' | '10-12' | null;
-export type GameType = 'programming' | 'patterns' | 'sequences' | 'deduction' | 'spatial' | 'maze' | 'dino';
+export type GameType =
+  | 'programming'
+  | 'patterns'
+  | 'sequences'
+  | 'deduction'
+  | 'spatial'
+  | 'maze'
+  | 'dino'
+  | 'matrix-reasoning'
+  | 'analogy-lab'
+  | 'transitive-trails'
+  | 'rule-switch'
+  | 'syllogism-snap'
+  | 'truth-gates'
+  | 'loop-lab'
+  | 'output-oracle'
+  | 'shape-sorter'
+  | 'color-coder';
 
 interface GameProgress {
   gamesPlayed: number;
@@ -44,6 +61,16 @@ const initialProgress: GameProgress = {
     spatial: 1,
     maze: 1,
     dino: 1,
+    'matrix-reasoning': 1,
+    'analogy-lab': 1,
+    'transitive-trails': 1,
+    'rule-switch': 1,
+    'syllogism-snap': 1,
+    'truth-gates': 1,
+    'loop-lab': 1,
+    'output-oracle': 1,
+    'shape-sorter': 1,
+    'color-coder': 1,
   },
 };
 

@@ -671,27 +671,27 @@ export default function DinoGame() {
   }, [gameState, startGame, jump, startDuck, endDuck]);
 
   return (
-    <main className="min-h-screen p-4 md:p-6 relative overflow-hidden bg-gradient-to-b from-slate-900 via-purple-900/20 to-slate-900">
+    <main className="min-h-screen min-h-[100dvh] p-3 sm:p-4 md:p-6 relative overflow-hidden bg-gradient-to-b from-slate-900 via-purple-900/20 to-slate-900">
       <Confetti show={showConfetti} />
 
       {/* Header */}
-      <header className="max-w-4xl mx-auto mb-6">
-        <div className="flex items-center justify-between flex-wrap gap-3">
+      <header className="max-w-4xl mx-auto mb-4 sm:mb-6">
+        <div className="flex items-center justify-between flex-wrap gap-2 sm:gap-3">
           <motion.button
             onClick={() => router.push('/dashboard')}
-            className="px-4 py-2 rounded-xl bg-white/10 border border-white/20 text-gray-300 hover:text-white transition-all text-sm backdrop-blur"
+            className="px-4 py-2.5 rounded-xl bg-white/10 border border-white/20 text-gray-300 hover:text-white transition-all text-sm backdrop-blur min-h-[44px] touch-target"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
             ← Back
           </motion.button>
-          <div className="flex items-center gap-3">
-            <div className="bg-white/10 backdrop-blur rounded-xl px-4 py-2 border border-white/20">
-              <span className="text-gray-400 text-sm">Score: </span>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="bg-white/10 backdrop-blur rounded-xl px-3 sm:px-4 py-2 border border-white/20">
+              <span className="text-gray-400 text-xs sm:text-sm">Score: </span>
               <span className="text-white font-bold">{score}</span>
             </div>
-            <div className="bg-white/10 backdrop-blur rounded-xl px-4 py-2 border border-white/20">
-              <span className="text-gray-400 text-sm">Best: </span>
+            <div className="bg-white/10 backdrop-blur rounded-xl px-3 sm:px-4 py-2 border border-white/20">
+              <span className="text-gray-400 text-xs sm:text-sm">Best: </span>
               <span className="text-yellow-400 font-bold">{highScore}</span>
             </div>
           </div>
@@ -701,16 +701,16 @@ export default function DinoGame() {
       <div className="max-w-4xl mx-auto">
         {/* Title */}
         <motion.div
-          className="text-center mb-6"
+          className="text-center mb-4 sm:mb-6"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <h1 className="text-3xl md:text-4xl font-bold mb-2">
+          <h1 className="text-xl sm:text-3xl md:text-4xl font-bold mb-2 px-1">
             <span className="bg-gradient-to-r from-green-400 via-emerald-400 to-cyan-400 bg-clip-text text-transparent">
               🦖 Space Dino Runner 🚀
             </span>
           </h1>
-          <p className="text-gray-400">Jump over obstacles and survive as long as you can!</p>
+          <p className="text-gray-400 text-sm sm:text-base">Jump over obstacles and survive as long as you can!</p>
         </motion.div>
 
         {/* Game Canvas */}
@@ -752,13 +752,13 @@ export default function DinoGame() {
                 )}
                 <motion.button
                   onClick={startGame}
-                  className="px-8 py-3 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold text-lg"
+                  className="px-6 sm:px-8 py-3 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold text-base sm:text-lg min-h-[48px] touch-target"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
                   {gameState === 'idle' ? '🎮 Start Game' : '🔄 Play Again'}
                 </motion.button>
-                <p className="text-gray-400 text-sm mt-4">Press SPACE or tap to jump</p>
+                <p className="text-gray-400 text-xs sm:text-sm mt-4">Press SPACE or tap to jump</p>
               </motion.div>
             )}
           </AnimatePresence>
@@ -766,12 +766,12 @@ export default function DinoGame() {
 
         {/* Controls */}
         <motion.div
-          className="mt-6 bg-white/5 backdrop-blur rounded-2xl p-4 border border-white/10"
+          className="mt-4 sm:mt-6 bg-white/5 backdrop-blur rounded-2xl p-3 sm:p-4 border border-white/10"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <h3 className="text-white font-semibold mb-3 text-center">Controls</h3>
-          <div className="flex justify-center gap-4">
+          <h3 className="text-white font-semibold mb-3 text-center text-sm sm:text-base">Controls</h3>
+          <div className="flex justify-center gap-3 sm:gap-4 flex-wrap">
             <motion.button
               onTouchStart={() => {
                 if (gameState === 'idle' || gameState === 'gameover') {
@@ -787,7 +787,7 @@ export default function DinoGame() {
                   jump();
                 }
               }}
-              className="w-24 h-16 rounded-xl bg-gradient-to-b from-green-500/30 to-green-600/30 border-2 border-green-500/50 text-white font-bold text-xl flex flex-col items-center justify-center"
+              className="min-w-[72px] w-20 sm:w-24 h-14 sm:h-16 rounded-xl bg-gradient-to-b from-green-500/30 to-green-600/30 border-2 border-green-500/50 text-white font-bold text-lg sm:text-xl flex flex-col items-center justify-center touch-target"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -800,7 +800,7 @@ export default function DinoGame() {
               onMouseDown={startDuck}
               onMouseUp={endDuck}
               onMouseLeave={endDuck}
-              className="w-24 h-16 rounded-xl bg-gradient-to-b from-amber-500/30 to-amber-600/30 border-2 border-amber-500/50 text-white font-bold text-xl flex flex-col items-center justify-center"
+              className="min-w-[72px] w-20 sm:w-24 h-14 sm:h-16 rounded-xl bg-gradient-to-b from-amber-500/30 to-amber-600/30 border-2 border-amber-500/50 text-white font-bold text-lg sm:text-xl flex flex-col items-center justify-center touch-target"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -815,12 +815,12 @@ export default function DinoGame() {
 
         {/* Obstacle Guide */}
         <motion.div
-          className="mt-4 text-center"
+          className="mt-4 text-center px-2"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
         >
-          <div className="inline-flex gap-4 text-sm flex-wrap justify-center">
+          <div className="inline-flex gap-2 sm:gap-4 text-xs sm:text-sm flex-wrap justify-center">
             <span className="text-green-400">🌵 Cactus - Jump!</span>
             <span className="text-red-400">🦅 Pterodactyl - Jump or Duck!</span>
             <span className="text-pink-400">☄️ Meteor - Jump!</span>

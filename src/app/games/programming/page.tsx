@@ -98,6 +98,19 @@ const categories: Category[] = [
     path: '/games/deduction',
   },
   {
+    id: 'logic-leap',
+    title: 'Logic Leap',
+    description: 'Jump through platforms by evaluating true/false conditions!',
+    icon: '🐸',
+    color: '#06b6d4',
+    bgGradient: 'from-cyan-600/20 to-sky-600/20',
+    levels: 10,
+    completed: 0,
+    locked: false,
+    comingSoon: false,
+    path: '/games/programming/logic-leap',
+  },
+  {
     id: 'algorithms',
     title: 'Algorithm Arena',
     description: 'Solve complex puzzles with algorithms!',
@@ -179,19 +192,19 @@ export default function CodeQuestHub() {
   const router = useRouter();
 
   return (
-    <main className="min-h-screen p-4 md:p-8 relative overflow-hidden">
+    <main className="min-h-screen min-h-[100dvh] p-3 sm:p-4 md:p-8 relative overflow-hidden">
       <FloatingShapes />
 
       {/* Header */}
       <motion.header
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative z-10 mb-8"
+        className="relative z-10 mb-4 sm:mb-8"
       >
-        <div className="flex items-center justify-between flex-wrap gap-4">
+        <div className="flex items-center justify-between flex-wrap gap-3">
           <motion.button
             onClick={() => router.push('/dashboard')}
-            className="glass px-4 py-2 rounded-xl text-gray-300 hover:text-white transition-colors"
+            className="glass px-4 py-2.5 rounded-xl text-gray-300 hover:text-white transition-colors min-h-[44px] touch-target text-sm sm:text-base"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
@@ -203,30 +216,30 @@ export default function CodeQuestHub() {
       <div className="max-w-6xl mx-auto relative z-10">
         {/* Title */}
         <motion.div
-          className="text-center mb-10"
+          className="text-center mb-6 sm:mb-10"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
           <motion.div
-            className="text-7xl mb-4"
+            className="text-5xl sm:text-7xl mb-3 sm:mb-4"
             animate={{ rotate: [0, 5, -5, 0] }}
             transition={{ duration: 2, repeat: Infinity }}
           >
             💻
           </motion.div>
-          <h1 className="text-4xl md:text-5xl font-bold mb-3">
+          <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold mb-2 sm:mb-3 px-1">
             <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
               Code Quest
             </span>
           </h1>
-          <p className="text-gray-400 text-lg max-w-xl mx-auto">
+          <p className="text-gray-400 text-sm sm:text-lg max-w-xl mx-auto px-2">
             Learn programming concepts through fun visual challenges!
           </p>
         </motion.div>
 
         {/* Categories Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
           {categories.map((category, index) => (
             <motion.div
               key={category.id}
@@ -237,7 +250,7 @@ export default function CodeQuestHub() {
               <motion.button
                 onClick={() => !category.comingSoon && category.path && router.push(category.path)}
                 disabled={category.comingSoon}
-                className={`w-full p-5 rounded-2xl text-left transition-all relative overflow-hidden group ${
+                className={`w-full p-4 sm:p-5 rounded-2xl text-left transition-all relative overflow-hidden group min-h-[140px] ${
                   category.comingSoon
                     ? 'cursor-not-allowed opacity-60'
                     : 'cursor-pointer hover:scale-[1.02]'
@@ -306,14 +319,14 @@ export default function CodeQuestHub() {
 
         {/* Learning Path Info */}
         <motion.div
-          className="mt-10 text-center"
+          className="mt-6 sm:mt-10 text-center px-2"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.8 }}
         >
-          <div className="glass rounded-2xl p-6 max-w-2xl mx-auto">
-            <h3 className="text-lg font-semibold text-white mb-2">🎯 Learning Path</h3>
-            <p className="text-gray-400 text-sm">
+          <div className="glass rounded-2xl p-4 sm:p-6 max-w-2xl mx-auto">
+            <h3 className="text-base sm:text-lg font-semibold text-white mb-2">🎯 Learning Path</h3>
+            <p className="text-gray-400 text-xs sm:text-sm">
               Start with <span className="text-blue-400 font-semibold">Robot Navigator</span> to learn basic commands, 
               then <span className="text-emerald-400 font-semibold">Function Factory</span> for reusable code,
               <span className="text-pink-400 font-semibold"> Variable Vault</span> for data storage, 
