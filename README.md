@@ -3,7 +3,7 @@
 A beautiful, engaging platform for kids to learn logic concepts through interactive games and puzzles. Built with Next.js, TypeScript, and Tailwind CSS.
 
 ![LogiQuest](https://img.shields.io/badge/Age%20Range-4--12%20years-purple)
-![Next.js](https://img.shields.io/badge/Next.js-16-black)
+![Next.js](https://img.shields.io/badge/Next.js-14-black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)
 
 ## ✨ Features
@@ -51,7 +51,14 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to see the app.
+Open **[http://127.0.0.1:3030](http://127.0.0.1:3030)** in your browser (this project pins that address/port so it does not fight other apps on port 3000).
+
+### Site won’t load?
+
+1. **Use the URL from the terminal** — After `npm run dev`, use the exact `Local:` URL it prints (should be `http://127.0.0.1:3030`).
+2. **If the tab spins forever** — Stop the server, delete the `.next` folder, run `npm run dev` again. On Windows, if the project lives in **OneDrive**, try pausing sync for this folder or moving the project out of OneDrive (sync can lock `.next` and slow or break builds).
+3. **Port already in use** — Run `npm run dev:default` or change the port: `npx next dev -H 127.0.0.1 -p 3040`.
+4. **`missing required error components, refreshing`** — Usually a **stale or broken `.next` cache** or **two dev servers** running. Stop every `npm run dev`, delete `.next`, start **one** `npm run dev` again. Don’t run `npm run build` while `dev` is running.
 
 ## 📦 Deployment on Vercel
 
@@ -69,7 +76,7 @@ No environment variables are required for basic deployment.
 
 ## 🛠️ Tech Stack
 
-- **Framework**: [Next.js 16](https://nextjs.org/)
+- **Framework**: [Next.js 14](https://nextjs.org/)
 - **Language**: [TypeScript](https://www.typescriptlang.org/)
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/)
 - **Animations**: [Framer Motion](https://www.framer.com/motion/)

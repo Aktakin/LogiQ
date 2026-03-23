@@ -213,27 +213,11 @@ export default function LogicLeapGame() {
   const [typeError, setTypeError] = useState('');
 
   const level = levels[currentLevelIndex];
-  if (!level) {
-    return (
-      <main className="min-h-screen bg-slate-950 flex items-center justify-center p-6">
-        <div className="text-center text-white">
-          <p className="mb-4">No level loaded.</p>
-          <button
-            onClick={() => router.push('/games/programming')}
-            className="px-4 py-2 rounded-lg bg-cyan-600 text-white"
-          >
-            ← Back to Programming
-          </button>
-        </div>
-      </main>
-    );
-  }
-  const currentPlatform = level.platforms.find(p => p.id === playerPosition);
-  const isTypeLevel = level.mode === 'type';
-  const correctPath = useMemo(() => getCorrectPath(level.platforms), [level.platforms]);
-  const pathIndex = correctPath.indexOf(playerPosition);
-  const nextCorrectPlatformId = pathIndex >= 0 && pathIndex < correctPath.length - 1 ? correctPath[pathIndex + 1] : null;
-  const trapPlatform = level.platforms.find(p => p.isTrap);
+
+  const correctPath = useMemo(
+    () => (level ? getCorrectPath(level.platforms) : []),
+    [level]
+  );
 
   useEffect(() => {
     setPlayerPosition(0);
@@ -243,31 +227,58 @@ export default function LogicLeapGame() {
     setTypeError('');
   }, [currentLevelIndex]);
 
-  const jumpToPlatform = useCallback((platformId: number) => {
-    if (gameState !== 'playing') return;
-    
-    const targetPlatform = level.platforms.find(p => p.id === platformId);
-    if (!targetPlatform || visitedPlatforms.includes(platformId)) return;
+  const jumpToPlatform = useCallback(
+    (platformId: number) => {
+      if (!level || gameState !== 'playing') return;
 
-    setJumpAnimation(true);
-    setTimeout(() => {
-      setJumpAnimation(false);
-      setPlayerPosition(platformId);
-      setVisitedPlatforms(prev => [...prev, platformId]);
+      const targetPlatform = level.platforms.find((p) => p.id === platformId);
+      if (!targetPlatform || visitedPlatforms.includes(platformId)) return;
 
-      if (targetPlatform.isTrap) {
-        setGameState('lost');
-        recordAnswer(false);
-      } else if (targetPlatform.isGoal) {
-        setGameState('won');
-        setShowConfetti(true);
-        addStars(2);
-        recordAnswer(true);
-        incrementGamesPlayed();
-        setTimeout(() => setShowConfetti(false), 3000);
-      }
-    }, 300);
-  }, [gameState, level.platforms, visitedPlatforms, addStars, recordAnswer, incrementGamesPlayed]);
+      setJumpAnimation(true);
+      setTimeout(() => {
+        setJumpAnimation(false);
+        setPlayerPosition(platformId);
+        setVisitedPlatforms((prev) => [...prev, platformId]);
+
+        if (targetPlatform.isTrap) {
+          setGameState('lost');
+          recordAnswer(false);
+        } else if (targetPlatform.isGoal) {
+          setGameState('won');
+          setShowConfetti(true);
+          addStars(2);
+          recordAnswer(true);
+          incrementGamesPlayed();
+          setTimeout(() => setShowConfetti(false), 3000);
+        }
+      }, 300);
+    },
+    [gameState, level, visitedPlatforms, addStars, recordAnswer, incrementGamesPlayed]
+  );
+
+  if (!level) {
+    return (
+      <main className="min-h-screen bg-slate-950 flex items-center justify-center p-6">
+        <div className="text-center text-white">
+          <p className="mb-4">No level loaded.</p>
+          <button
+            type="button"
+            onClick={() => router.push('/games/programming')}
+            className="px-4 py-2 rounded-lg bg-cyan-600 text-white"
+          >
+            ← Back to Programming
+          </button>
+        </div>
+      </main>
+    );
+  }
+
+  const currentPlatform = level.platforms.find((p) => p.id === playerPosition);
+  const isTypeLevel = level.mode === 'type';
+  const pathIndex = correctPath.indexOf(playerPosition);
+  const nextCorrectPlatformId =
+    pathIndex >= 0 && pathIndex < correctPath.length - 1 ? correctPath[pathIndex + 1] : null;
+  const trapPlatform = level.platforms.find((p) => p.isTrap);
 
   const submitTypeLeap = () => {
     setTypeError('');
@@ -383,7 +394,7 @@ export default function LogicLeapGame() {
             <span className="text-emerald-400">Leap</span>
             <span className="text-cyan-400">_</span>
           </h1>
-          <p className="text-slate-500 text-sm font-mono">// Navigate by evaluating conditions</p>
+          <p className="text-slate-500 text-sm font-mono">{'// Navigate by evaluating conditions'}</p>
         </motion.div>
 
         {/* Level Info */}
@@ -398,7 +409,7 @@ export default function LogicLeapGame() {
               <p className="text-cyan-400 text-sm mt-1">{level.concept}</p>
             </div>
             <div className="bg-slate-800 rounded-lg px-4 py-2 font-mono text-sm">
-              <span className="text-slate-500">// Variables:</span>
+              <span className="text-slate-500">{'// Variables:'}</span>
               <div className="text-emerald-400">
                 {Object.entries(level.variables).map(([key, value]) => (
                   <div key={key}>
@@ -595,7 +606,7 @@ export default function LogicLeapGame() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
         >
-          <div className="text-slate-500 font-mono text-xs mb-2">// Legend:</div>
+          <div className="text-slate-500 font-mono text-xs mb-2">{'// Legend:'}</div>
           <div className="flex flex-wrap gap-4 text-xs font-mono">
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded bg-gradient-to-r from-blue-600 to-cyan-500"></div>

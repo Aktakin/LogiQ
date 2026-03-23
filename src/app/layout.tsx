@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import type { CSSProperties, ReactNode } from "react";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -58,7 +59,7 @@ function Stars() {
             top: star.top,
             '--duration': star.duration,
             '--delay': star.delay,
-          } as React.CSSProperties}
+          } as CSSProperties}
         />
       ))}
     </div>

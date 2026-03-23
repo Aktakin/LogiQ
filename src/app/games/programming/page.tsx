@@ -34,9 +34,9 @@ const categories: Category[] = [
   },
   {
     id: 'functions',
-    title: 'Function Factory',
-    description: 'Create your own reusable command blocks!',
-    icon: '📦',
+    title: 'Frog Function Pond',
+    description: 'Hop lily pads and save moves as functions!',
+    icon: '🐸',
     color: '#10b981',
     bgGradient: 'from-emerald-600/20 to-teal-600/20',
     levels: 10,
@@ -59,6 +59,19 @@ const categories: Category[] = [
     path: '/games/programming/variables',
   },
   {
+    id: 'case-cipher',
+    title: 'Case Cipher',
+    description: 'Speed + precision: type tokens exactly; beat your best time (saved locally).',
+    icon: '🔐',
+    color: '#2dd4bf',
+    bgGradient: 'from-teal-600/25 to-emerald-600/20',
+    levels: 1,
+    completed: 0,
+    locked: false,
+    comingSoon: false,
+    path: '/games/programming/case-cipher',
+  },
+  {
     id: 'arrays',
     title: 'Array Pond',
     description: 'Help frogs reach lily pads using array methods!',
@@ -73,12 +86,12 @@ const categories: Category[] = [
   },
   {
     id: 'loops',
-    title: 'Loop Master',
-    description: 'Learn to repeat actions with loops and patterns!',
-    icon: '🔄',
+    title: 'Loop Blaster',
+    description: 'Blast aliens by writing for, while, and for…of loops!',
+    icon: '💥',
     color: '#8b5cf6',
     bgGradient: 'from-purple-600/20 to-violet-600/20',
-    levels: 10,
+    levels: 19,
     completed: 0,
     locked: false,
     comingSoon: false,
@@ -134,6 +147,19 @@ const categories: Category[] = [
     locked: false,
     comingSoon: false,
     path: '/games/programming/debugging',
+  },
+  {
+    id: 'funcky-frog',
+    title: 'FUNCky Frog',
+    description: 'Guide a frog through mazes by writing commands — then learn to create functions!',
+    icon: '🐸',
+    color: '#059669',
+    bgGradient: 'from-emerald-600/20 to-green-600/20',
+    levels: 8,
+    completed: 0,
+    locked: false,
+    comingSoon: false,
+    path: '/games/programming/funcky-frog',
   },
   {
     id: 'rock-paper-scissors',
@@ -328,7 +354,7 @@ export default function CodeQuestHub() {
             <h3 className="text-base sm:text-lg font-semibold text-white mb-2">🎯 Learning Path</h3>
             <p className="text-gray-400 text-xs sm:text-sm">
               Start with <span className="text-blue-400 font-semibold">Robot Navigator</span> to learn basic commands, 
-              then <span className="text-emerald-400 font-semibold">Function Factory</span> for reusable code,
+              then <span className="text-emerald-400 font-semibold">Frog Function Pond</span> for reusable code,
               <span className="text-pink-400 font-semibold"> Variable Vault</span> for data storage, 
               <span className="text-purple-400 font-semibold"> Loop Master</span> for repetition, and
               <span className="text-amber-400 font-semibold"> Under One Condition</span> for if, then, else!

@@ -1,834 +1,945 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useMemo, useEffect, useRef, type ChangeEvent, type ReactNode } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useGameStore } from '@/store/gameStore';
 import Confetti from '@/components/Confetti';
 
-type LevelType = 'fill' | 'type';
+/* ─── types ─── */
+
+interface Blank { answer: string; hint: string }
+
+interface Enemy { id: number; emoji: string; hp: number; label?: string; ally?: boolean }
 
 interface Level {
   id: number;
-  levelType: LevelType;
   title: string;
-  story: string;
-  concept: string;
-  targetCount: number;
+  intro: string;
+  loopType: 'for' | 'while' | 'for-of';
+  enemies: Enemy[];
+  showIndices?: boolean;
+  targetSeq: number[];
+  codeTemplate: string;
+  blanks: Blank[];
   hint: string;
-  starterCode: string;
-  maxIterations: number;
-  collectible: string;
-  bonusThreshold?: number;
+  errorHint: string;
+  /** After level 14: type the whole loop (normalized match vs `expectedLoop`). */
+  inputMode?: 'blanks' | 'fullLoop';
+  /** Canonical answer; compared with `normalizeLoopAnswer`. */
+  expectedLoop?: string;
+  /** Extra outline shown in the hint panel (with “Hint”). */
+  fullLoopHint?: string;
+  /** Lines shown above the textarea (comments + setup). */
+  codePreamble?: string;
 }
 
-const fillLevels: Omit<Level, 'id' | 'levelType'>[] = [
-  {
-    title: 'First Launch',
-    story: '🚀 Your rocket needs exactly 5 fuel cells to reach the moon!',
-    concept: 'A loop repeats code multiple times. The number controls how many times!',
-    targetCount: 5,
-    hint: 'for (let i = 0; i < 5; i++)',
-    starterCode: 'for (let i = 0; i < ',
-    maxIterations: 10,
-    collectible: '⚡',
-  },
-  {
-    title: 'Star Collector',
-    story: '⭐ Collect exactly 8 stars to unlock the next galaxy!',
-    concept: 'The loop variable "i" counts each repetition.',
-    targetCount: 8,
-    hint: 'for (let i = 0; i < 8; i++)',
-    starterCode: 'for (let i = 0; i < ',
-    maxIterations: 15,
-    collectible: '⭐',
-  },
-  {
-    title: 'Alien Eggs',
-    story: '🥚 The alien queen needs 12 eggs hatched for her babies!',
-    concept: 'Loops save time - instead of writing code 12 times, write it once in a loop!',
-    targetCount: 12,
-    hint: 'for (let i = 0; i < 12; i++)',
-    starterCode: 'for (let i = 0; i < ',
-    maxIterations: 20,
-    collectible: '🥚',
-  },
-  {
-    title: 'Countdown Launch',
-    story: '🔢 Program the countdown: Start from 10 and count down to 1!',
-    concept: 'Loops can count DOWN too! Use i-- to decrease.',
-    targetCount: 10,
-    hint: 'for (let i = 10; i > 0; i--)',
-    starterCode: 'for (let i = 10; i > 0; i--)',
-    maxIterations: 15,
-    collectible: '🔢',
-    bonusThreshold: 10,
-  },
-  {
-    title: 'Crystal Cave',
-    story: '💎 Mine exactly 15 crystals from the asteroid belt!',
-    concept: 'The condition (i < 15) tells the loop WHEN to stop.',
-    targetCount: 15,
-    hint: 'The condition checks if we should keep going',
-    starterCode: 'for (let i = 0; i < ',
-    maxIterations: 25,
-    collectible: '💎',
-  },
-  {
-    title: 'Double Jump',
-    story: '🦘 Jump by 2s! Collect every other gem (0, 2, 4, 6, 8).',
-    concept: 'Use i += 2 to skip numbers! This is called the "step".',
-    targetCount: 5,
-    hint: 'for (let i = 0; i < 10; i += 2)',
-    starterCode: 'for (let i = 0; i < 10; i += 2)',
-    maxIterations: 10,
-    collectible: '💠',
-    bonusThreshold: 5,
-  },
-  {
-    title: 'Planet Hopper',
-    story: '🪐 Visit exactly 7 planets on your space tour!',
-    concept: 'Loops are perfect for repeating actions a specific number of times.',
-    targetCount: 7,
-    hint: 'How many planets? Set the condition!',
-    starterCode: 'for (let i = 0; i < ',
-    maxIterations: 15,
-    collectible: '🪐',
-  },
-  {
-    title: 'Meteor Shield',
-    story: '☄️ Activate 20 shield units to survive the meteor storm!',
-    concept: 'Master loops can handle big numbers easily!',
-    targetCount: 20,
-    hint: 'for (let i = 0; i < 20; i++)',
-    starterCode: 'for (let i = 0; i < ',
-    maxIterations: 30,
-    collectible: '🛡️',
-  },
-  {
-    title: 'Warp Speed',
-    story: '🌀 Charge the warp drive with 25 energy bursts!',
-    concept: 'Loops make repetitive tasks simple and fast!',
-    targetCount: 25,
-    hint: 'Big number, but loops make it easy!',
-    starterCode: 'for (let i = 0; i < ',
-    maxIterations: 35,
-    collectible: '🌀',
-  },
-  {
-    title: 'Galaxy Master',
-    story: '🌌 The final challenge: Power up ALL 30 space stations!',
-    concept: 'You\'ve mastered loops! They repeat code any number of times.',
-    targetCount: 30,
-    hint: 'You know this! Set the right number.',
-    starterCode: 'for (let i = 0; i < ',
-    maxIterations: 40,
-    collectible: '🏆',
-  },
-];
+/* ─── helpers ─── */
 
-// Type-the-loop exercises: after each loop level from level 4, kid types full loop anatomy
-const typeExercises: Omit<Level, 'id'>[] = [
-  {
-    levelType: 'type',
-    title: 'Type the loop — 12 moves',
-    story: '✍️ Make the robot move 12 times. Type the whole loop header (inside the parentheses). No robot.collect() or braces!',
-    concept: 'You type: let i = 0; i < 12; i++',
-    targetCount: 12,
-    hint: 'for (let i = 0; i < 12; i++) — type the part inside the parentheses.',
-    starterCode: '',
-    maxIterations: 20,
-    collectible: '⚡',
-  },
-  {
-    levelType: 'type',
-    title: 'Type the loop — 15 crystals',
-    story: '💎 Type a loop that runs exactly 15 times.',
-    concept: 'Same anatomy: start, condition, step.',
-    targetCount: 15,
-    hint: 'let i = 0; i < 15; i++',
-    starterCode: '',
-    maxIterations: 25,
-    collectible: '💎',
-  },
-  {
-    levelType: 'type',
-    title: 'Type the loop — Jump by 2',
-    story: '🦘 Type a loop that jumps by 2 (like Double Jump!). Collect every other item: 0, 2, 4, 6, 8 → 5 items.',
-    concept: 'Use i += 2 in the loop header.',
-    targetCount: 5,
-    hint: 'for (let i = 0; i < 10; i += 2) — type the part inside ( ).',
-    starterCode: '',
-    maxIterations: 10,
-    collectible: '💠',
-  },
-  {
-    levelType: 'type',
-    title: 'Type the loop — 7 planets',
-    story: '🪐 Type a loop that runs exactly 7 times.',
-    concept: 'for ( let i = 0; i < 7; i++ )',
-    targetCount: 7,
-    hint: 'let i = 0; i < 7; i++',
-    starterCode: '',
-    maxIterations: 15,
-    collectible: '🪐',
-  },
-  {
-    levelType: 'type',
-    title: 'Type the loop — 20 shields',
-    story: '☄️ Type a loop that runs 20 times.',
-    concept: 'Big number, same loop anatomy.',
-    targetCount: 20,
-    hint: 'let i = 0; i < 20; i++',
-    starterCode: '',
-    maxIterations: 30,
-    collectible: '🛡️',
-  },
-  {
-    levelType: 'type',
-    title: 'Tricky start — i starts at 5',
-    story: '🤔 The robot starts at position 5. Collect 5 items (positions 5, 6, 7, 8, 9). Type the loop — watch out for the start value!',
-    concept: 'let i = 5; i < 10; i++ — the loop variable can start from any number.',
-    targetCount: 5,
-    hint: 'Start at 5: let i = 5; condition must stop after 5 runs: i < 10',
-    starterCode: '',
-    maxIterations: 15,
-    collectible: '🌀',
-  },
-  {
-    levelType: 'type',
-    title: 'Type the loop — 30 stations',
-    story: '🌌 Final type challenge: type a loop that runs exactly 30 times.',
-    concept: 'You\'ve got this! for ( let i = 0; i < 30; i++ )',
-    targetCount: 30,
-    hint: 'let i = 0; i < 30; i++',
-    starterCode: '',
-    maxIterations: 40,
-    collectible: '🏆',
-  },
-];
+const sleep = (ms: number) => new Promise<void>(r => setTimeout(r, ms));
 
-// Build full level list: fill levels 1–4, then after each fill level from 4 onward add a type exercise
-const levels: Level[] = [];
-let id = 1;
-fillLevels.forEach((f, index) => {
-  levels.push({
-    id: id++,
-    levelType: 'fill',
-    title: f.title,
-    story: f.story,
-    concept: f.concept,
-    targetCount: f.targetCount,
-    hint: f.hint,
-    starterCode: f.starterCode,
-    maxIterations: f.maxIterations,
-    collectible: f.collectible,
-    bonusThreshold: f.bonusThreshold,
+/** Loosens whitespace and optional line-ending semicolons for comparing typed loops. */
+function normalizeLoopAnswer(s: string): string {
+  return s
+    .replace(/\r\n/g, '\n')
+    .replace(/;\s*(?=\n)/g, '')
+    .trim()
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/** Level 15–19: grey = not yet typed (hint), green = correct, red = wrong. */
+function FullLoopCharView({ expected, typed }: { expected: string; typed: string }) {
+  const chars = Array.from(expected);
+  return (
+    <pre className="m-0 whitespace-pre-wrap font-mono text-xs sm:text-sm leading-relaxed text-left">
+      {chars.map((ch, i) => {
+        const has = i < typed.length;
+        const u = typed[i];
+        const ok = has && u === ch;
+        const cls = !has ? 'text-gray-600' : ok ? 'text-emerald-400' : 'text-red-400';
+
+        if (ch === '\n') {
+          return (
+            <span key={i} className={cls}>
+              {!has ? (
+                <span className="text-gray-600 select-none" title="newline">
+                  ↵
+                </span>
+              ) : ok ? (
+                <span className="text-emerald-400/90">↵</span>
+              ) : (
+                <span className="text-red-400">{u === '\n' ? '↵' : u}</span>
+              )}
+              {'\n'}
+            </span>
+          );
+        }
+
+        if (ch === ' ') {
+          return (
+            <span key={i} className={`${cls} inline-block min-w-[0.45em]`}>
+              {has ? (u === ' ' ? '\u00A0' : u) : <span className="text-gray-600">·</span>}
+            </span>
+          );
+        }
+
+        return (
+          <span key={i} className={cls}>
+            {has ? u : ch}
+          </span>
+        );
+      })}
+      {typed.length < expected.length && (
+        <span className="inline-block w-0.5 h-4 ml-px align-middle bg-cyan-400/80 animate-pulse rounded-sm" aria-hidden />
+      )}
+    </pre>
+  );
+}
+
+function parseTemplate(tpl: string): (string | number)[][] {
+  return tpl.split('\n').map(line => {
+    const parts: (string | number)[] = [];
+    let rest = line;
+    const re = /\{\{(\d+)\}\}/;
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(rest)) !== null) {
+      if (m.index > 0) parts.push(rest.slice(0, m.index));
+      parts.push(parseInt(m[1]));
+      rest = rest.slice(m.index + m[0].length);
+    }
+    if (rest) parts.push(rest);
+    if (parts.length === 0) parts.push('');
+    return parts;
   });
-  if (index >= 3 && typeExercises[index - 3]) {
-    levels.push({ ...typeExercises[index - 3], id: id++ });
-  }
-});
+}
 
-export default function LoopMasterGame() {
+const KW = /^(?:for|let|while|of|const|function)$/;
+function colorize(text: string): ReactNode[] {
+  const parts = text.split(/((?:for|let|while|of|const|function)\b|\b\d+\b|'[^']*'|\w+\()/);
+  return parts.filter(Boolean).map((tok, i) => {
+    if (KW.test(tok)) return <span key={i} className="text-purple-400 font-semibold">{tok}</span>;
+    if (/^\d+$/.test(tok)) return <span key={i} className="text-amber-300">{tok}</span>;
+    if (/^'[^']*'$/.test(tok)) return <span key={i} className="text-emerald-300">{tok}</span>;
+    if (/^\w+\($/.test(tok)) return <span key={i} className="text-cyan-300">{tok}</span>;
+    return <span key={i}>{tok}</span>;
+  });
+}
+
+const LOOP_TAG: Record<string, { label: string; color: string }> = {
+  'for':     { label: 'for loop',     color: '#818cf8' },
+  'while':   { label: 'while loop',   color: '#34d399' },
+  'for-of':  { label: 'for…of loop',  color: '#fbbf24' },
+};
+
+/* ─── levels ─── */
+
+const E = (id: number, emoji: string, hp = 1, label?: string, ally?: boolean): Enemy =>
+  ({ id, emoji, hp, ...(label ? { label } : {}), ...(ally ? { ally } : {}) });
+
+const levels: Level[] = [
+  {
+    id: 1,
+    title: 'First Volley',
+    intro: 'A for loop repeats code a set number of times. Count the enemies!',
+    loopType: 'for',
+    enemies: [E(0,'👾'), E(1,'👾'), E(2,'👾')],
+    targetSeq: [0,1,2],
+    codeTemplate: 'for (let i = 0; i < {{0}}; i++) {\n  shoot()\n}',
+    blanks: [{ answer: '3', hint: 'count' }],
+    hint: 'Count the enemies — that\'s how many times the loop should run.',
+    errorHint: 'There are 3 enemies. The loop needs i < 3.',
+  },
+  {
+    id: 2,
+    title: 'Five Alive',
+    intro: 'More enemies! Same pattern — just a bigger number.',
+    loopType: 'for',
+    enemies: [E(0,'👾'), E(1,'👽'), E(2,'👾'), E(3,'👽'), E(4,'👾')],
+    targetSeq: [0,1,2,3,4],
+    codeTemplate: 'for (let i = 0; i < {{0}}; i++) {\n  shoot()\n}',
+    blanks: [{ answer: '5', hint: 'count' }],
+    hint: 'Same for loop — just more enemies to blast.',
+    errorHint: 'Five enemies need five shots: i < 5.',
+  },
+  {
+    id: 3,
+    title: 'Skip the Allies',
+    intro: 'The first 2 are allies (🛡️)! Start the loop after them.',
+    loopType: 'for',
+    enemies: [E(0,'🛡️',1,undefined,true), E(1,'🛡️',1,undefined,true), E(2,'👾'), E(3,'👾'), E(4,'👾')],
+    showIndices: true,
+    targetSeq: [2,3,4],
+    codeTemplate: 'for (let i = {{0}}; i < 5; i++) {\n  shoot(i)\n}',
+    blanks: [{ answer: '2', hint: 'start' }],
+    hint: 'Allies are at index 0 and 1. Start shooting at index 2.',
+    errorHint: 'Start at i = 2 to skip the first two allies.',
+  },
+  {
+    id: 4,
+    title: 'Skip Shot',
+    intro: 'Every other enemy is a decoy! Increment by 2 to hit only the real ones.',
+    loopType: 'for',
+    enemies: [E(0,'👾'), E(1,'🪨'), E(2,'👾'), E(3,'🪨'), E(4,'👾'), E(5,'🪨')],
+    showIndices: true,
+    targetSeq: [0,2,4],
+    codeTemplate: 'for (let i = 0; i < 6; i += {{0}}) {\n  shoot(i)\n}',
+    blanks: [{ answer: '2', hint: 'step' }],
+    hint: 'Real enemies are at 0, 2, 4. What increment skips one each time?',
+    errorHint: 'Use i += 2 to hit indices 0, 2, 4.',
+  },
+  {
+    id: 5,
+    title: 'Countdown!',
+    intro: 'Shoot from right to left — use a decrementing loop.',
+    loopType: 'for',
+    enemies: [E(0,'👾'), E(1,'👾'), E(2,'👾'), E(3,'👾')],
+    showIndices: true,
+    targetSeq: [3,2,1,0],
+    codeTemplate: 'for (let i = {{0}}; i >= 0; i--) {\n  shoot(i)\n}',
+    blanks: [{ answer: '3', hint: 'start' }],
+    hint: 'Start from the last index (3) and count down to 0.',
+    errorHint: 'The last enemy is at index 3. Start there: i = 3.',
+  },
+  {
+    id: 6,
+    title: 'Boss Battle',
+    intro: 'A while loop keeps going until a condition is false. Drain the boss HP!',
+    loopType: 'while',
+    enemies: [E(0,'👹',5)],
+    targetSeq: [0,0,0,0,0],
+    codeTemplate: 'let hp = 5\nwhile (hp > {{0}}) {\n  attack()\n  hp--\n}',
+    blanks: [{ answer: '0', hint: '?' }],
+    hint: 'The boss has 5 HP. Keep attacking while HP is above what number?',
+    errorHint: 'Attack while hp > 0 — that drains all 5 HP.',
+  },
+  {
+    id: 7,
+    title: 'Shield Down',
+    intro: 'The shield blocks everything. Name the variable to check!',
+    loopType: 'while',
+    enemies: [E(0,'🛡️',3)],
+    targetSeq: [0,0,0],
+    codeTemplate: 'let shield = 3\nwhile ({{0}} > 0) {\n  blast()\n  shield--\n}',
+    blanks: [{ answer: 'shield', hint: 'variable' }],
+    hint: 'Which variable tracks the shield strength? Use its name in the condition.',
+    errorHint: 'The variable is called "shield" — use it in the while condition.',
+  },
+  {
+    id: 8,
+    title: 'Target Each',
+    intro: 'A for…of loop goes through each item in a list. Name the list!',
+    loopType: 'for-of',
+    enemies: [E(0,'👾',1,'alien'), E(1,'👻',1,'ghost'), E(2,'🟢',1,'slime')],
+    targetSeq: [0,1,2],
+    codeTemplate: "let targets = ['alien', 'ghost', 'slime']\nfor (let t of {{0}}) {\n  destroy(t)\n}",
+    blanks: [{ answer: 'targets', hint: 'array' }],
+    hint: 'The array is stored in a variable. What\'s its name?',
+    errorHint: 'Loop over the "targets" array: for (let t of targets).',
+  },
+  {
+    id: 9,
+    title: 'Name Your Shot',
+    intro: 'The loop variable name must match how it\'s used inside the body.',
+    loopType: 'for-of',
+    enemies: [E(0,'🦇',1,'bat'), E(1,'🐀',1,'rat'), E(2,'🐱',1,'cat'), E(3,'👹',1,'ogre')],
+    targetSeq: [0,1,2,3],
+    codeTemplate: "let foes = ['bat', 'rat', 'cat', 'ogre']\nfor (let {{0}} of foes) {\n  blast(enemy)\n}",
+    blanks: [{ answer: 'enemy', hint: 'name' }],
+    hint: 'Look at the function call inside: blast(enemy). The loop variable must be called…',
+    errorHint: 'blast(enemy) uses "enemy", so write: for (let enemy of foes).',
+  },
+
+  /* ── 10–14: mixed blanks ── */
+  {
+    id: 10,
+    title: 'Six Pack',
+    intro: 'A full row of six — count them for your loop bound.',
+    loopType: 'for',
+    enemies: [E(0, '👾'), E(1, '👽'), E(2, '👾'), E(3, '👽'), E(4, '👾'), E(5, '👽')],
+    targetSeq: [0, 1, 2, 3, 4, 5],
+    codeTemplate: 'for (let i = 0; i < {{0}}; i++) {\n  shoot()\n}',
+    blanks: [{ answer: '6', hint: 'count' }],
+    hint: 'Six aliens in a row → the loop runs six times.',
+    errorHint: 'Use i < 6.',
+  },
+  {
+    id: 11,
+    title: 'Dragon Breath',
+    intro: 'The dragon has 5 HP — blast until it is gone.',
+    loopType: 'while',
+    enemies: [E(0, '🐉', 5)],
+    targetSeq: [0, 0, 0, 0, 0],
+    codeTemplate: 'let hp = 5\nwhile (hp > {{0}}) {\n  shoot()\n  hp--\n}',
+    blanks: [{ answer: '0', hint: '?' }],
+    hint: 'Keep shooting while hp is still above zero.',
+    errorHint: 'while (hp > 0) { shoot(); hp--; }',
+  },
+  {
+    id: 12,
+    title: 'Corridor',
+    intro: 'The first slot is an ally — only fire from index 1 onward.',
+    loopType: 'for',
+    enemies: [E(0, '🛡️', 1, undefined, true), E(1, '👾'), E(2, '👾'), E(3, '👾'), E(4, '👾')],
+    showIndices: true,
+    targetSeq: [1, 2, 3, 4],
+    codeTemplate: 'for (let i = {{0}}; i < 5; i++) {\n  shoot(i)\n}',
+    blanks: [{ answer: '1', hint: 'start' }],
+    hint: 'Skip index 0 — start i at 1.',
+    errorHint: 'for (let i = 1; i < 5; i++) { shoot(i) }',
+  },
+  {
+    id: 13,
+    title: 'Cargo Scan',
+    intro: 'Loop over every crate in the cargo array.',
+    loopType: 'for-of',
+    enemies: [E(0, '📦', 1, 'red'), E(1, '📦', 1, 'green'), E(2, '📦', 1, 'blue'), E(3, '📦', 1, 'gold')],
+    targetSeq: [0, 1, 2, 3],
+    codeTemplate: "let cargo = ['red', 'green', 'blue', 'gold']\nfor (let c of {{0}}) {\n  shoot()\n}",
+    blanks: [{ answer: 'cargo', hint: 'array' }],
+    hint: 'for (let c of ???) — the list is stored in `cargo`.',
+    errorHint: 'Use: for (let c of cargo).',
+  },
+  {
+    id: 14,
+    title: 'Ghost Targets',
+    intro: 'Only every other ship is real — step through indices by 2.',
+    loopType: 'for',
+    enemies: [E(0, '👾'), E(1, '👻'), E(2, '👾'), E(3, '👻'), E(4, '👾'), E(5, '👻')],
+    showIndices: true,
+    targetSeq: [0, 2, 4],
+    codeTemplate: 'for (let i = 0; i < 6; i += {{0}}) {\n  shoot(i)\n}',
+    blanks: [{ answer: '2', hint: 'step' }],
+    hint: 'Hit indices 0, 2, and 4 — increase i by 2 each time.',
+    errorHint: 'Use i += 2.',
+  },
+
+  /* ── 15–19: type the full loop (hints show outline) ── */
+  {
+    id: 15,
+    title: 'Write the Loop',
+    intro: 'No blanks — write the whole for loop. Check the hint if you are stuck.',
+    loopType: 'for',
+    inputMode: 'fullLoop',
+    codePreamble:
+      '// Four aliens in a row. Type the complete for loop (including { and }).\n// Call shoot() once per iteration.\n',
+    enemies: [E(0, '👾'), E(1, '👽'), E(2, '👾'), E(3, '👽')],
+    targetSeq: [0, 1, 2, 3],
+    codeTemplate: '',
+    blanks: [],
+    expectedLoop: `for (let i = 0; i < 4; i++) {
+  shoot()
+}`,
+    hint: 'You need four iterations — i should start at 0 and stop before 4.',
+    fullLoopHint:
+      'Outline: for (let i = 0; i < 4; i++) {\n  shoot()\n}\n→ i goes 0, 1, 2, 3 — four shots.',
+    errorHint: 'Match: for (let i = 0; i < 4; i++) { shoot() } with braces around the body.',
+  },
+  {
+    id: 16,
+    title: 'Drain the Tank',
+    intro: 'The U.F.O. has 4 HP. `let hp = 4` is already set — you write the while loop.',
+    loopType: 'while',
+    inputMode: 'fullLoop',
+    codePreamble: 'let hp = 4\n\n// Write only the while loop below (with { }). Each hit does shoot() then hp--.\n',
+    enemies: [E(0, '🛸', 4)],
+    targetSeq: [0, 0, 0, 0],
+    codeTemplate: '',
+    blanks: [],
+    expectedLoop: `while (hp > 0) {
+  shoot()
+  hp--
+}`,
+    hint: 'Loop while hp is still positive; inside, shoot once and subtract 1 from hp.',
+    fullLoopHint:
+      'while (hp > 0) {\n  shoot()\n  hp--\n}\n→ Stops when hp becomes 0.',
+    errorHint: 'while (hp > 0) { shoot(); hp--; } — hp-- can be on its own line.',
+  },
+  {
+    id: 17,
+    title: 'Squad Roll Call',
+    intro: 'The squad array is ready — write a for…of loop using the variable name `n`.',
+    loopType: 'for-of',
+    inputMode: 'fullLoop',
+    codePreamble: "let squad = ['uno', 'dos', 'tres']\n\n// Type a for (let n of squad) loop; call shoot() each time.\n",
+    enemies: [E(0, '⭐'), E(1, '⭐'), E(2, '⭐')],
+    targetSeq: [0, 1, 2],
+    codeTemplate: '',
+    blanks: [],
+    expectedLoop: `for (let n of squad) {
+  shoot()
+}`,
+    hint: 'for (let n of squad) — then one shoot() inside the block.',
+    fullLoopHint: 'for (let n of squad) {\n  shoot()\n}\n→ n is each string in the array.',
+    errorHint: 'Use exactly: for (let n of squad) { shoot() }',
+  },
+  {
+    id: 18,
+    title: 'Skip Beat',
+    intro: 'Six icons — blast only indices 0, 2, and 4. Write the for loop with i += 2.',
+    loopType: 'for',
+    inputMode: 'fullLoop',
+    codePreamble: '// Step through 0, 2, 4 with a for loop. Use shoot(i) inside.\n',
+    enemies: [E(0, '👾'), E(1, '👻'), E(2, '👾'), E(3, '👻'), E(4, '👾'), E(5, '👻')],
+    showIndices: true,
+    targetSeq: [0, 2, 4],
+    codeTemplate: '',
+    blanks: [],
+    expectedLoop: `for (let i = 0; i < 6; i += 2) {
+  shoot(i)
+}`,
+    hint: 'Start at 0, stay under 6, add 2 to i each time — pass i into shoot.',
+    fullLoopHint: 'for (let i = 0; i < 6; i += 2) {\n  shoot(i)\n}',
+    errorHint: 'i += 2 in the for header; body uses shoot(i).',
+  },
+  {
+    id: 19,
+    title: 'Reverse Strike',
+    intro: 'Four targets — fire from the rightmost index down to 0.',
+    loopType: 'for',
+    inputMode: 'fullLoop',
+    codePreamble: '// Indices 3 → 2 → 1 → 0. Use i-- and shoot(i).\n',
+    enemies: [E(0, '👾'), E(1, '👽'), E(2, '👾'), E(3, '👽')],
+    showIndices: true,
+    targetSeq: [3, 2, 1, 0],
+    codeTemplate: '',
+    blanks: [],
+    expectedLoop: `for (let i = 3; i >= 0; i--) {
+  shoot(i)
+}`,
+    hint: 'Start i at 3, continue while i >= 0, decrement i after each shot.',
+    fullLoopHint: 'for (let i = 3; i >= 0; i--) {\n  shoot(i)\n}',
+    errorHint: 'Count down: i = 3, condition i >= 0, i-- in the header.',
+  },
+];
+
+/* ─── component ─── */
+
+export default function LoopBlasterPage() {
   const router = useRouter();
-  const { addStars, incrementGamesPlayed, recordAnswer } = useGameStore();
+  const { addStars, recordAnswer, incrementGamesPlayed } = useGameStore();
 
-  const [currentLevelIndex, setCurrentLevelIndex] = useState(0);
-  const [userInput, setUserInput] = useState('');
-  const [isRunning, setIsRunning] = useState(false);
-  const [collectedItems, setCollectedItems] = useState<number[]>([]);
-  const [showResult, setShowResult] = useState<'success' | 'fail' | null>(null);
+  const [levelIdx, setLevelIdx] = useState(0);
+  const [answers, setAnswers] = useState<string[]>([]);
+  const [phase, setPhase] = useState<'idle' | 'firing' | 'win' | 'error'>('idle');
+  const [activeShotTarget, setActiveShotTarget] = useState(-1);
+  const [hp, setHp] = useState<Record<number, number>>({});
+  const [wrongBlanks, setWrongBlanks] = useState<Set<number>>(new Set());
   const [showConfetti, setShowConfetti] = useState(false);
-  const [iterationDisplay, setIterationDisplay] = useState<number | null>(null);
-  const [characterPosition, setCharacterPosition] = useState(0);
-  const [itemsOnPath, setItemsOnPath] = useState<number[]>([]);
-  const [totalLoopCount, setTotalLoopCount] = useState(0);
-  const [loopStart, setLoopStart] = useState(0);
-  const [pathLength, setPathLength] = useState(0);
-  const animationRef = useRef<NodeJS.Timeout | null>(null);
+  const [showHint, setShowHint] = useState(false);
+  /** Only for level 0 — intro runs before “First Volley”, then stays off until remount / replay. */
+  const [introDismissed, setIntroDismissed] = useState(false);
+  const firingRef = useRef(false);
 
-  const level = levels[currentLevelIndex];
+  const showIntroScreen = levelIdx === 0 && !introDismissed;
+
+  const level = levels[levelIdx];
+  const tag = LOOP_TAG[level.loopType];
+  const isFullLoop = level.inputMode === 'fullLoop';
+  const parsed = useMemo(() => {
+    if (level.inputMode === 'fullLoop') return null;
+    return parseTemplate(level.codeTemplate);
+  }, [level.codeTemplate, level.inputMode]);
 
   useEffect(() => {
-    setUserInput('');
-    setCollectedItems([]);
-    setShowResult(null);
-    setIterationDisplay(null);
-    setCharacterPosition(0);
-    setItemsOnPath([]);
-    setTotalLoopCount(0);
-    setLoopStart(0);
-    setPathLength(0);
-    if (animationRef.current) {
-      clearTimeout(animationRef.current);
-    }
-  }, [currentLevelIndex]);
+    const h: Record<number, number> = {};
+    level.enemies.forEach(e => { h[e.id] = e.hp; });
+    setHp(h);
+    setAnswers(level.inputMode === 'fullLoop' ? [''] : level.blanks.map(() => ''));
+    setPhase('idle');
+    setActiveShotTarget(-1);
+    setWrongBlanks(new Set());
+    setShowHint(false);
+    firingRef.current = false;
+  }, [levelIdx, level]);
 
-  const parseLoopStart = useCallback((code: string): number => {
-    const m = code.match(/let i = (\d+)/);
-    return m ? parseInt(m[1]) : 0;
-  }, []);
+  const updateAnswer = (idx: number, val: string) => {
+    setAnswers(prev => { const n = [...prev]; n[idx] = val; return n; });
+    if (phase === 'error') { setPhase('idle'); setWrongBlanks(new Set()); }
+  };
 
-  const parseLoopStep = useCallback((code: string): number => {
-    if (code.includes('i += 2')) return 2;
-    if (code.includes('i += 3')) return 3;
-    if (code.includes('i--')) return -1;
-    return 1;
-  }, []);
+  const fire = async () => {
+    if (firingRef.current) return;
 
-  const parseLoopCount = useCallback((code: string): number => {
-    const startMatch = code.match(/let i = (\d+)/);
-    const start = startMatch ? parseInt(startMatch[1]) : 0;
-
-    // Handle countdown loops
-    if (code.includes('i--') || code.includes('i > 0')) {
-      if (startMatch) return start; // 10, 9, ..., 1
-      return 0;
-    }
-
-    // Handle step loops (i += 2)
-    if (code.includes('i += 2')) {
-      const match = code.match(/i < (\d+)/);
-      if (match) return Math.ceil((parseInt(match[1]) - start) / 2);
-      return 0;
-    }
-
-    // Handle standard for loops: i < N → N - start iterations
-    const match = code.match(/i < (\d+)/);
-    if (match) return Math.max(0, parseInt(match[1]) - start);
-
-    // Handle <= condition
-    const matchLe = code.match(/i <= (\d+)/);
-    if (matchLe) return Math.max(0, parseInt(matchLe[1]) - start + 1);
-
-    return 0;
-  }, []);
-
-  const runLoop = useCallback(() => {
-    const isTypeLevel = level.levelType === 'type';
-    let fullCode: string;
-    if (isTypeLevel) {
-      const inner = userInput.replace(/^\s*for\s*\(/i, '').replace(/\s*\)\s*$/, '').trim();
-      fullCode = inner ? `for (${inner}) { }` : '';
-    } else {
-      fullCode = level.starterCode + userInput + (level.starterCode.includes('i-') || level.starterCode.includes('i +=') ? '' : '; i++) { }');
-    }
-    const count = parseLoopCount(fullCode);
-    
-    if (count <= 0 || count > level.maxIterations) {
-      setShowResult('fail');
-      return;
-    }
-
-    const start = parseLoopStart(fullCode);
-    const step = parseLoopStep(fullCode);
-    const isCountdown = fullCode.includes('i--') || fullCode.includes('i > 0');
-    const effectiveStart = isCountdown ? 0 : start;
-    const positions = step > 1
-      ? Array.from({ length: count }, (_, i) => effectiveStart + i * step)
-      : Array.from({ length: count }, (_, i) => effectiveStart + i);
-    const pathLen = step > 1 ? (effectiveStart + (count - 1) * step + 1) : effectiveStart + count;
-    setPathLength(pathLen);
-    setLoopStart(effectiveStart);
-    setIsRunning(true);
-    setCollectedItems([]);
-    setIterationDisplay(0);
-    setCharacterPosition(positions[0]);
-    setTotalLoopCount(count);
-
-    setItemsOnPath(positions);
-
-    let currentIteration = 0;
-    const runIteration = () => {
-      if (currentIteration < count) {
-        const pos = positions[currentIteration];
-        setCharacterPosition(pos);
-
-        setTimeout(() => {
-          setCollectedItems(prev => [...prev, pos]);
-          setItemsOnPath(prev => prev.filter(i => i !== pos));
-          setIterationDisplay(currentIteration + 1);
-          currentIteration++;
-          animationRef.current = setTimeout(runIteration, 400);
-        }, 200);
-      } else {
-        setIsRunning(false);
-        setCharacterPosition(-1); // Move character to collected area
-        if (count === level.targetCount) {
-          setShowResult('success');
-          setShowConfetti(true);
-          addStars(2);
-          recordAnswer(true);
-          incrementGamesPlayed();
-          setTimeout(() => setShowConfetti(false), 3000);
-        } else {
-          setShowResult('fail');
-          recordAnswer(false);
-        }
+    if (level.inputMode === 'fullLoop' && level.expectedLoop) {
+      const ok =
+        normalizeLoopAnswer(answers[0] ?? '') === normalizeLoopAnswer(level.expectedLoop);
+      if (!ok) {
+        setPhase('error');
+        return;
       }
-    };
+    } else {
+      const wrong = new Set<number>();
+      level.blanks.forEach((b, i) => {
+        if (answers[i].trim() !== b.answer) wrong.add(i);
+      });
+      if (wrong.size > 0) {
+        setWrongBlanks(wrong);
+        setPhase('error');
+        return;
+      }
+    }
 
-    runIteration();
-  }, [level, userInput, parseLoopCount, parseLoopStart, parseLoopStep, addStars, recordAnswer, incrementGamesPlayed]);
+    firingRef.current = true;
+    setPhase('firing');
+
+    const localHP: Record<number, number> = {};
+    level.enemies.forEach(e => { localHP[e.id] = e.hp; });
+    setHp({ ...localHP });
+
+    await sleep(300);
+
+    for (let s = 0; s < level.targetSeq.length; s++) {
+      if (!firingRef.current) break;
+      const tid = level.targetSeq[s];
+      setActiveShotTarget(tid);
+      await sleep(180);
+      localHP[tid]--;
+      setHp({ ...localHP });
+      setActiveShotTarget(-1);
+      await sleep(320);
+    }
+
+    if (!firingRef.current) return;
+    setPhase('win');
+    addStars(2);
+    recordAnswer(true);
+    incrementGamesPlayed();
+    setShowConfetti(true);
+    setTimeout(() => setShowConfetti(false), 3000);
+    firingRef.current = false;
+  };
 
   const resetLevel = () => {
-    setUserInput('');
-    setCollectedItems([]);
-    setShowResult(null);
-    setIterationDisplay(null);
-    setCharacterPosition(0);
-    setItemsOnPath([]);
-    setTotalLoopCount(0);
-    setLoopStart(0);
-    setPathLength(0);
-    setIsRunning(false);
-    if (animationRef.current) {
-      clearTimeout(animationRef.current);
-    }
+    firingRef.current = false;
+    const h: Record<number, number> = {};
+    level.enemies.forEach(e => { h[e.id] = e.hp; });
+    setHp(h);
+    setPhase('idle');
+    setActiveShotTarget(-1);
+    setWrongBlanks(new Set());
+    setShowHint(false);
   };
 
   const nextLevel = () => {
-    if (currentLevelIndex < levels.length - 1) {
-      setCurrentLevelIndex(prev => prev + 1);
-    } else {
-      router.push('/games/programming');
+    if (levelIdx >= levels.length - 1) router.push('/games/programming');
+    else setLevelIdx(levelIdx + 1);
+  };
+
+  const isFiring = phase === 'firing';
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const fullLoopInputRef = useRef<HTMLTextAreaElement>(null);
+
+  const handleFullLoopChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
+    const exp = level.expectedLoop ?? '';
+    const prev = answers[0] ?? '';
+    const nv = e.target.value.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    if (nv.length < prev.length) {
+      updateAnswer(0, nv);
+      return;
+    }
+    if (nv.length > exp.length) {
+      updateAnswer(0, prev);
+      return;
+    }
+    if (nv.length > prev.length + 1) {
+      updateAnswer(0, prev);
+      return;
+    }
+    if (nv.length === prev.length + 1) {
+      updateAnswer(0, nv);
     }
   };
 
-  // Calculate display items count for path (include start offset so "let i = 5" shows slots 0..9)
-  const displayCount = totalLoopCount
-    ? loopStart + totalLoopCount
-    : level.levelType === 'type'
-      ? Math.max(level.targetCount, 15)
-      : Math.min(level.targetCount, 12);
+  useEffect(() => {
+    if (level.inputMode !== 'fullLoop') return;
+    const t = window.setTimeout(() => fullLoopInputRef.current?.focus(), 80);
+    return () => clearTimeout(t);
+  }, [levelIdx, level.inputMode]);
+
+  /* ─── render ─── */
 
   return (
-    <main className="min-h-screen min-h-[100dvh] bg-gradient-to-b from-indigo-950 via-purple-950 to-slate-900 p-3 sm:p-4 md:p-6 relative overflow-hidden">
+    <main className="min-h-screen min-h-[100dvh] p-3 sm:p-4 md:p-6 relative overflow-hidden bg-gradient-to-b from-slate-950 via-indigo-950/30 to-slate-950">
       <Confetti show={showConfetti} />
 
-      {/* Animated stars background */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(50)].map((_, i) => (
-          <motion.div
+      {/* stars background */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        {Array.from({ length: 40 }).map((_, i) => (
+          <div
             key={i}
-            className="absolute w-1 h-1 bg-white rounded-full"
+            className="absolute rounded-full bg-white/20"
             style={{
-              left: `${Math.random() * 100}%`,
+              width: Math.random() * 2 + 1,
+              height: Math.random() * 2 + 1,
               top: `${Math.random() * 100}%`,
-            }}
-            animate={{
-              opacity: [0.2, 1, 0.2],
-              scale: [1, 1.5, 1],
-            }}
-            transition={{
-              duration: 2 + Math.random() * 3,
-              repeat: Infinity,
-              delay: Math.random() * 2,
+              left: `${Math.random() * 100}%`,
+              animation: `pulse ${2 + Math.random() * 3}s ease-in-out infinite`,
+              animationDelay: `${Math.random() * 3}s`,
             }}
           />
         ))}
       </div>
 
-      {/* Header */}
-      <header className="max-w-4xl mx-auto mb-4 relative z-10">
-        <div className="flex items-center justify-between flex-wrap gap-3">
+      {showIntroScreen ? (
+        <>
+          <header className="max-w-4xl mx-auto mb-6 relative z-10">
+            <motion.button
+              onClick={() => router.push('/games/programming')}
+              className="glass px-3 py-2 rounded-xl text-gray-300 hover:text-white text-sm min-h-[44px]"
+              whileTap={{ scale: 0.97 }}
+            >
+              ← Code Quest
+            </motion.button>
+          </header>
+
+          <div className="relative z-10 flex flex-col items-center justify-center min-h-[min(80dvh,720px)] px-2">
+            <motion.div
+              role="dialog"
+              aria-labelledby="loop-intro-title"
+              className="glass rounded-3xl p-6 sm:p-8 max-w-lg w-full border border-purple-500/25 shadow-2xl shadow-purple-900/20"
+              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+              transition={{ type: 'spring', stiffness: 320, damping: 28 }}
+            >
+              <p className="text-center text-[11px] uppercase tracking-widest text-purple-400/80 mb-2">
+                Before Loop Blaster — First Volley
+              </p>
+              <div className="text-4xl mb-3 text-center">🔄</div>
+              <h2 id="loop-intro-title" className="text-xl sm:text-2xl font-bold text-white text-center mb-3">
+                What are loops?
+              </h2>
+              <p className="text-center text-xs text-gray-500 mb-4">
+                Read this first — then you&apos;ll start <span className="text-gray-300 font-semibold">Level 1: First Volley</span>.
+              </p>
+              <p className="text-gray-300 text-sm sm:text-base leading-relaxed mb-4">
+                <strong className="text-purple-300">Loops are for repetitive actions</strong> — when you need to do the
+                same thing more than once, you don&apos;t have to write it over and over.
+              </p>
+              <div className="rounded-xl bg-black/35 border border-white/10 p-3 mb-4 font-mono text-xs sm:text-sm">
+                <p className="text-gray-500 text-[11px] uppercase tracking-wide mb-2">Instead of this</p>
+                <div className="text-rose-300/90 space-y-0.5">
+                  <div>shoot()</div>
+                  <div>shoot()</div>
+                  <div>shoot()</div>
+                </div>
+              </div>
+              <div className="rounded-xl bg-black/35 border border-emerald-500/20 p-3 mb-5 font-mono text-xs sm:text-sm">
+                <p className="text-gray-500 text-[11px] uppercase tracking-wide mb-2">…you can say it once</p>
+                <div className="text-emerald-300/95 space-y-2">
+                  <div>
+                    <span className="text-gray-500">{"// e.g. a loop (you'll practice this!):"}</span>
+                  </div>
+                  <div>
+                    for (let i = 0; i &lt; 3; i++) {'{'} shoot() {'}'}
+                  </div>
+                  <div className="text-gray-400 pt-1 border-t border-white/5">
+                    <span className="text-gray-500">{'// or a helper name:'}</span> shootThree()
+                  </div>
+                </div>
+              </div>
+              <p className="text-gray-500 text-xs text-center mb-5">
+                Same idea: one pattern that runs multiple times — shorter code, fewer mistakes.
+              </p>
+              <motion.button
+                type="button"
+                onClick={() => setIntroDismissed(true)}
+                className="w-full py-3.5 rounded-xl font-bold text-slate-950 bg-gradient-to-r from-purple-400 to-violet-500 min-h-[48px] text-sm sm:text-base"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                Start First Volley →
+              </motion.button>
+            </motion.div>
+          </div>
+        </>
+      ) : (
+        <>
+      {/* header */}
+      <header className="max-w-4xl mx-auto mb-3 relative z-10">
+        <div className="flex items-center justify-between flex-wrap gap-2">
           <motion.button
             onClick={() => router.push('/games/programming')}
-            className="px-4 py-2.5 rounded-xl bg-white/10 border border-white/20 text-gray-300 hover:text-white transition-all text-sm backdrop-blur min-h-[44px] touch-target"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+            className="glass px-3 py-2 rounded-xl text-gray-300 hover:text-white text-sm min-h-[44px]"
+            whileTap={{ scale: 0.97 }}
           >
-            ← Back
+            ← Code Quest
           </motion.button>
-          <div className="flex gap-3">
-            <div className="bg-white/10 backdrop-blur rounded-xl px-4 py-2 border border-white/20">
-              <span className="text-gray-300 text-sm">Level </span>
-              <span className="text-white font-bold">{currentLevelIndex + 1}/{levels.length}</span>
+          <div className="flex gap-2 text-sm">
+            <div className="glass px-3 py-1.5 rounded-xl">
+              <span className="text-gray-400">Level </span>
+              <span className="text-white font-bold">{levelIdx + 1}/{levels.length}</span>
             </div>
-            <div className="bg-purple-500/20 backdrop-blur rounded-xl px-4 py-2 border border-purple-500/30">
-              <span className="text-purple-300 text-sm">Target: </span>
-              <span className="text-purple-200 font-bold">{level.targetCount} {level.collectible}</span>
+            <div
+              className="px-3 py-1.5 rounded-xl text-xs font-bold"
+              style={{ backgroundColor: `${tag.color}20`, color: tag.color, border: `1px solid ${tag.color}35` }}
+            >
+              {tag.label}
             </div>
           </div>
         </div>
       </header>
 
-      <div className="max-w-4xl mx-auto relative z-10">
-        {/* Title */}
-        <motion.div
-          className="text-center mb-4"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <h1 className="text-2xl md:text-3xl font-bold mb-1">
-            <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
-              🔄 Loop Launcher 🚀
-            </span>
-          </h1>
+      <div className="max-w-4xl mx-auto relative z-10 space-y-4">
+        {/* title */}
+        <motion.div className="text-center" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
+          <h1 className="text-xl sm:text-2xl font-bold text-white">💥 {level.title}</h1>
+          <p className="text-gray-400 text-xs sm:text-sm mt-1 max-w-md mx-auto">{level.intro}</p>
         </motion.div>
 
-        {/* Level Story */}
+        {/* ── battle zone ── */}
         <motion.div
-          className="bg-white/5 backdrop-blur rounded-2xl border border-white/10 p-4 mb-4"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          className="glass rounded-2xl p-4 sm:p-6 relative overflow-hidden"
+          initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
         >
-          <h2 className="text-lg font-bold text-white mb-1">{level.title}</h2>
-          <p className="text-xl mb-2">{level.story}</p>
-          <div className="bg-cyan-500/20 rounded-xl px-3 py-1.5 inline-block">
-            <span className="text-cyan-400 text-sm">💡 {level.concept}</span>
+          {/* enemy grid */}
+          <div className="flex justify-center mb-6 flex-wrap">
+            <div className="flex gap-3 sm:gap-4 flex-wrap justify-center">
+              {level.enemies.map((enemy) => {
+                const dead = (hp[enemy.id] ?? enemy.hp) <= 0;
+                const isHit = activeShotTarget === enemy.id;
+                const hpLeft = hp[enemy.id] ?? enemy.hp;
+                return (
+                  <motion.div
+                    key={`${levelIdx}-${enemy.id}`}
+                    className="flex flex-col items-center"
+                    initial={{ y: -20, opacity: 0 }}
+                    animate={{
+                      y: dead ? 10 : 0,
+                      opacity: dead ? 0 : 1,
+                      scale: isHit ? 1.25 : 1,
+                    }}
+                    transition={{
+                      delay: dead ? 0 : enemy.id * 0.06,
+                      type: isHit ? 'spring' : 'tween',
+                      stiffness: 400,
+                      damping: 15,
+                    }}
+                  >
+                    <div
+                      className={`relative text-3xl sm:text-4xl transition-all ${
+                        enemy.ally ? 'opacity-50 grayscale' : ''
+                      } ${isHit ? 'drop-shadow-[0_0_12px_rgba(239,68,68,0.8)]' : ''}`}
+                    >
+                      {dead ? '💥' : enemy.emoji}
+                      {/* HP hearts for multi-HP enemies */}
+                      {enemy.hp > 1 && !dead && (
+                        <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 flex gap-0.5">
+                          {Array.from({ length: enemy.hp }).map((_, i) => (
+                            <span key={i} className={`text-[8px] ${i < hpLeft ? 'opacity-100' : 'opacity-20'}`}>
+                              ❤️
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    {level.showIndices && (
+                      <span className="text-[10px] text-gray-500 font-mono mt-1">[{enemy.id}]</span>
+                    )}
+                    {enemy.label && (
+                      <span className="text-[10px] text-gray-500 mt-0.5">{enemy.label}</span>
+                    )}
+                  </motion.div>
+                );
+              })}
+            </div>
           </div>
+
+          {/* cannon */}
+          <div className="flex justify-center">
+            <motion.div
+              className="text-3xl sm:text-4xl"
+              animate={isFiring && activeShotTarget >= 0
+                ? { scale: [1, 1.2, 1], filter: ['brightness(1)', 'brightness(1.6)', 'brightness(1)'] }
+                : {}}
+              transition={{ duration: 0.15 }}
+            >
+              🚀
+            </motion.div>
+          </div>
+          {isFiring && activeShotTarget >= 0 && (
+            <motion.div
+              className="absolute left-1/2 -translate-x-1/2 bottom-16 w-1.5 h-8 rounded-full bg-gradient-to-t from-cyan-400 to-transparent"
+              initial={{ opacity: 0, y: 0 }} animate={{ opacity: [1, 0], y: -60 }}
+              transition={{ duration: 0.18 }}
+              key={`proj-${activeShotTarget}-${Date.now()}`}
+            />
+          )}
         </motion.div>
 
-        {/* Game Area - Collection Path */}
+        {/* ── code editor ── */}
         <motion.div
-          className="bg-slate-900/80 backdrop-blur rounded-2xl border border-purple-500/30 p-4 mb-4"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          className="glass rounded-2xl overflow-hidden"
+          initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
         >
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-white font-bold flex items-center gap-2">
-              <span>🎮</span> Collection Path
-            </h3>
-            {iterationDisplay !== null && (
-              <motion.div
-                className="bg-purple-500/30 px-3 py-1 rounded-full"
-                animate={{ scale: [1, 1.1, 1] }}
-                transition={{ duration: 0.3 }}
-              >
-                <span className="text-purple-300 text-sm">
-                  Loop #{iterationDisplay}
-                </span>
-              </motion.div>
+          <div className="bg-slate-900/60 px-4 py-2 border-b border-white/5 flex items-center justify-between">
+            <span className="text-xs text-gray-500 font-mono">loop.js</span>
+            <span className="text-[10px] text-gray-600">
+              {isFullLoop ? 'Type each character — grey hints, green = match' : 'Fill in the blanks'}
+            </span>
+          </div>
+          <div className="p-4 font-mono text-sm leading-relaxed">
+            {isFullLoop ? (
+              <div className="space-y-3">
+                {level.codePreamble && (
+                  <pre className="text-gray-400 text-xs sm:text-sm whitespace-pre-wrap font-mono border-l-2 border-cyan-500/30 pl-3 pointer-events-none">
+                    {level.codePreamble}
+                  </pre>
+                )}
+                <p className="text-[10px] text-gray-500 pointer-events-none">
+                  Click the box and type. Wrong keys show in red; backspace to fix. Pasting is disabled.
+                </p>
+                <div
+                  className={`relative min-h-[160px] rounded-lg bg-slate-950/80 border px-3 py-2.5 transition-colors ${
+                    phase === 'error'
+                      ? 'border-red-500/60 ring-1 ring-red-500/30'
+                      : 'border-cyan-500/35'
+                  }`}
+                >
+                  <div className="pointer-events-none relative z-0 pr-1">
+                    <FullLoopCharView expected={level.expectedLoop ?? ''} typed={answers[0] ?? ''} />
+                  </div>
+                  <textarea
+                    ref={fullLoopInputRef}
+                    value={answers[0] ?? ''}
+                    onChange={handleFullLoopChange}
+                    onPaste={e => e.preventDefault()}
+                    onKeyDown={e => {
+                      if (e.key === 'Tab') e.preventDefault();
+                    }}
+                    disabled={isFiring || phase === 'win'}
+                    spellCheck={false}
+                    autoComplete="off"
+                    autoCorrect="off"
+                    autoCapitalize="off"
+                    aria-label="Type the loop code one character at a time"
+                    className="absolute inset-0 z-10 w-full h-full min-h-[160px] cursor-text resize-none bg-transparent text-transparent caret-cyan-400/90 selection:bg-cyan-500/20 rounded-lg outline-none focus:ring-1 focus:ring-cyan-500/30"
+                  />
+                </div>
+              </div>
+            ) : (
+              parsed?.map((line, li) => (
+                <div key={li} className="flex items-center min-h-[28px]">
+                  <span className="text-gray-600 select-none w-7 text-right mr-3 text-xs shrink-0">{li + 1}</span>
+                  <div className="flex items-center flex-wrap text-gray-300">
+                    {line.map((part, pi) =>
+                      typeof part === 'string' ? (
+                        <span key={pi}>{colorize(part)}</span>
+                      ) : (
+                        <input
+                          key={pi}
+                          ref={el => { inputRefs.current[part] = el; }}
+                          value={answers[part] ?? ''}
+                          onChange={e => updateAnswer(part, e.target.value)}
+                          disabled={isFiring || phase === 'win'}
+                          placeholder={level.blanks[part].hint}
+                          className={`mx-0.5 px-1.5 py-0.5 rounded font-mono text-center outline-none transition-colors ${
+                            wrongBlanks.has(part)
+                              ? 'bg-red-500/15 border-b-2 border-red-400 text-red-300'
+                              : 'bg-cyan-500/10 border-b-2 border-cyan-500/50 text-cyan-200 focus:border-cyan-400 placeholder-gray-600'
+                          }`}
+                          style={{ width: Math.max(44, level.blanks[part].answer.length * 11 + 24) }}
+                          onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) fire(); }}
+                        />
+                      )
+                    )}
+                  </div>
+                </div>
+              ))
             )}
           </div>
+        </motion.div>
 
-          {/* Animated Path */}
-          <div className="relative bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 rounded-xl p-4 min-h-[160px] overflow-hidden">
-            {/* Ground/Path line */}
-            <div className="absolute bottom-10 left-16 right-16 h-1 bg-gradient-to-r from-purple-600 via-pink-500 to-purple-600 rounded-full" />
-            
-            {/* Start/End markers */}
-            <div className="absolute bottom-8 left-2 text-xs text-green-400 font-bold bg-green-500/20 px-2 py-1 rounded">START</div>
-            <div className="absolute bottom-8 right-2 text-xs text-red-400 font-bold bg-red-500/20 px-2 py-1 rounded">END</div>
+        {/* error message */}
+        <AnimatePresence>
+          {phase === 'error' && (
+            <motion.div
+              initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+              className="glass rounded-xl p-3 border border-rose-500/25 text-center"
+            >
+              <p className="text-rose-400 text-sm font-semibold mb-1">❌ Not quite right!</p>
+              <p className="text-gray-400 text-xs">{level.errorHint}</p>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-            {/* Items on path - evenly distributed */}
-            <div className="relative h-28 mx-16">
-              {/* Items and positions */}
-              <div className="absolute inset-0 flex items-end justify-between">
-                {Array.from({ length: displayCount }).map((_, index) => {
-                  const isCollected = collectedItems.includes(index);
-                  // Show item if: not collected, OR if running and still on path
-                  const shouldShowItem = !isCollected && (itemsOnPath.length > 0 ? itemsOnPath.includes(index) : (level.levelType === 'fill' && index < level.targetCount));
-                  const isRobotHere = isRunning && characterPosition === index;
-                  
-                  return (
-                    <div
-                      key={index}
-                      className="flex flex-col items-center relative"
-                    >
-                      {/* Robot at this position */}
-                      <AnimatePresence>
-                        {isRobotHere && (
-                          <motion.div
-                            initial={{ scale: 0, y: 20 }}
-                            animate={{ scale: 1, y: 0 }}
-                            exit={{ scale: 0, y: -20 }}
-                            className="absolute -top-4 text-3xl z-10"
-                          >
-                            <motion.div
-                              animate={{ y: [0, -6, 0] }}
-                              transition={{ duration: 0.3, repeat: Infinity }}
-                            >
-                              🤖
-                            </motion.div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                      
-                      {/* Item */}
-                      <AnimatePresence mode="wait">
-                        {shouldShowItem && (
-                          <motion.div
-                            key={`item-${index}`}
-                            initial={{ scale: 0, y: -20 }}
-                            animate={{ 
-                              scale: isRobotHere ? [1, 1.2, 0] : 1, 
-                              y: isRobotHere ? [0, -10, -30] : 0,
-                              opacity: isRobotHere ? [1, 1, 0] : 1,
-                            }}
-                            exit={{ scale: 0, y: -30, opacity: 0 }}
-                            transition={{ duration: isRobotHere ? 0.3 : 0.2 }}
-                            className="text-2xl mb-1"
-                          >
-                            {level.collectible}
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                      
-                      {/* Position number - ABOVE the line */}
-                      <div className={`text-xs font-mono font-bold mb-1 ${
-                        isCollected ? 'text-green-400' : 
-                        isRobotHere ? 'text-yellow-400' : 
-                        'text-gray-400'
-                      }`}>
-                        {index}
-                      </div>
-                      
-                      {/* Position dot on path */}
-                      <div className={`w-3 h-3 rounded-full transition-colors duration-300 ${
-                        isCollected ? 'bg-green-500 shadow-lg shadow-green-500/50' : 
-                        isRobotHere ? 'bg-yellow-500 shadow-lg shadow-yellow-500/50' : 
-                        'bg-purple-500'
-                      }`} />
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
+        {/* controls */}
+        <div className="flex gap-2">
+          <motion.button
+            onClick={fire}
+            disabled={
+              isFiring ||
+              phase === 'win' ||
+              (isFullLoop ? !answers[0]?.trim() : answers.some(a => !a.trim()))
+            }
+            className="flex-1 py-3 rounded-xl font-bold text-white text-sm bg-gradient-to-r from-red-600 to-orange-500 disabled:opacity-35 min-h-[48px]"
+            whileHover={!isFiring ? { scale: 1.02 } : {}}
+            whileTap={!isFiring ? { scale: 0.97 } : {}}
+          >
+            {isFiring ? '💥 Firing…' : '🔥 FIRE!'}
+          </motion.button>
+          <motion.button
+            onClick={resetLevel}
+            disabled={isFiring}
+            className="px-4 py-3 rounded-xl font-bold text-gray-300 bg-slate-700/50 disabled:opacity-35 min-h-[48px] text-sm"
+            whileTap={{ scale: 0.97 }}
+          >
+            ↺
+          </motion.button>
+        </div>
 
-          {/* Collected Items Display */}
-          <div className="mt-4 bg-slate-800/50 rounded-xl p-3">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-gray-400 text-sm">🎒 Collected Items:</span>
-              <span className={`font-bold ${collectedItems.length === level.targetCount ? 'text-green-400' : 'text-white'}`}>
-                {collectedItems.length} / {level.targetCount}
-              </span>
-            </div>
-            
-            {/* Collected items row */}
-            <div className="flex flex-wrap gap-1 min-h-[40px] items-center">
-              {collectedItems.length === 0 ? (
-                <span className="text-gray-500 text-sm">Items will appear here...</span>
-              ) : (
-                <AnimatePresence>
-                  {collectedItems.map((item, index) => (
-                    <motion.span
-                      key={index}
-                      initial={{ scale: 0, rotate: -180 }}
-                      animate={{ scale: 1, rotate: 0 }}
-                      className="text-xl"
-                    >
-                      {level.collectible}
-                    </motion.span>
-                  ))}
-                </AnimatePresence>
-              )}
-            </div>
-
-            {/* Progress bar */}
-            <div className="mt-2 h-2 bg-slate-700 rounded-full overflow-hidden">
-              <motion.div
-                className={`h-full ${
-                  collectedItems.length === level.targetCount 
-                    ? 'bg-gradient-to-r from-green-500 to-emerald-400' 
-                    : collectedItems.length > level.targetCount 
-                      ? 'bg-gradient-to-r from-red-500 to-orange-400' 
-                      : 'bg-gradient-to-r from-purple-500 to-pink-500'
-                }`}
-                initial={{ width: 0 }}
-                animate={{ width: `${Math.min((collectedItems.length / level.targetCount) * 100, 100)}%` }}
-                transition={{ duration: 0.3 }}
-              />
-            </div>
-          </div>
-
-          {/* Result Message */}
+        {/* hint */}
+        <div className="text-center">
+          <button onClick={() => setShowHint(h => !h)} className="text-[11px] text-gray-500 hover:text-gray-300">
+            {showHint ? 'Hide hint' : '💡 Hint'}
+          </button>
           <AnimatePresence>
-            {showResult && (
+            {showHint && (
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                className={`mt-4 p-4 rounded-xl text-center ${
-                  showResult === 'success' 
-                    ? 'bg-green-500/20 border border-green-500/50' 
-                    : 'bg-red-500/20 border border-red-500/50'
-                }`}
+                initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
+                className="mt-1 space-y-2"
               >
-                {showResult === 'success' ? (
-                  <>
-                    <div className="text-3xl mb-2">🎉</div>
-                    <div className="text-green-400 font-bold text-lg">Perfect Loop!</div>
-                    <div className="text-green-300 text-sm">Robot collected exactly {level.targetCount} items!</div>
-                    <div className="text-yellow-400 mt-2">⭐ +2 Stars!</div>
-                  </>
-                ) : (
-                  <>
-                    <div className="text-3xl mb-2">😅</div>
-                    <div className="text-red-400 font-bold">
-                      {collectedItems.length > level.targetCount ? 'Too many!' : 'Not enough!'}
-                    </div>
-                    <div className="text-red-300 text-sm">
-                      Robot got {collectedItems.length}, but needed {level.targetCount}
-                    </div>
-                  </>
+                <p className="text-[11px] text-amber-300/80 leading-relaxed">{level.hint}</p>
+                {level.fullLoopHint && (
+                  <pre className="text-[10px] sm:text-[11px] text-amber-200/75 whitespace-pre-wrap font-mono text-left max-w-lg mx-auto leading-relaxed border border-amber-500/15 rounded-lg p-2 bg-amber-950/20">
+                    {level.fullLoopHint}
+                  </pre>
                 )}
               </motion.div>
             )}
           </AnimatePresence>
-        </motion.div>
+        </div>
 
-        {/* Code Input */}
-        <motion.div
-          className="bg-slate-900/80 backdrop-blur rounded-2xl border border-cyan-500/30 overflow-hidden mb-4"
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-        >
-          <div className="px-4 py-2 bg-slate-800/50 border-b border-slate-700 flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-red-500"></div>
-            <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-            <div className="w-3 h-3 rounded-full bg-green-500"></div>
-            <span className="ml-3 text-slate-400 text-sm font-mono">loop.js</span>
-          </div>
-
-          <div className="p-4">
-            <div className="bg-slate-800/50 rounded-xl p-3 font-mono text-sm">
-              <div className="text-gray-500 mb-1">
-                {level.levelType === 'type'
-                  ? '// Type the loop anatomy (inside the parentheses). No robot.collect() or braces — you type the rest.'
-                  : "// Program the robot's loop:"}
-              </div>
-              {level.levelType === 'type' ? (
-                <>
-                  <div className="flex flex-wrap items-center gap-1">
-                    <span className="text-purple-400">for</span>
-                    <span className="text-gray-400">(</span>
-                    <input
-                      type="text"
-                      value={userInput}
-                      onChange={(e) => setUserInput(e.target.value)}
-                      className="flex-1 min-w-[200px] px-3 py-2 bg-slate-700 border border-cyan-500/50 rounded text-cyan-200 font-mono focus:outline-none focus:ring-2 focus:ring-cyan-400 placeholder-slate-500"
-                      placeholder="let i = 0; i < 12; i++"
-                      disabled={isRunning}
-                      spellCheck={false}
-                    />
-                    <span className="text-gray-400">) {'{'}</span>
-                  </div>
-                  <div className="text-cyan-400 ml-4 my-1">
-                    robot.collect({level.collectible});
-                  </div>
-                  <div className="text-gray-400">{'}'}</div>
-                </>
-              ) : (
-                <>
-                  <div className="flex flex-wrap items-center gap-1">
-                    <span className="text-purple-400">{level.starterCode}</span>
-                    {!level.starterCode.includes('i-') && !level.starterCode.includes('i +=') ? (
-                      <>
-                        <input
-                          type="text"
-                          value={userInput}
-                          onChange={(e) => setUserInput(e.target.value.replace(/[^0-9]/g, ''))}
-                          className="w-14 px-2 py-1 bg-purple-500/20 border border-purple-500 rounded text-purple-300 text-center font-mono focus:outline-none focus:ring-2 focus:ring-purple-400"
-                          placeholder="?"
-                          disabled={isRunning}
-                          maxLength={3}
-                        />
-                        <span className="text-gray-400">; i++) {'{'}</span>
-                      </>
-                    ) : (
-                      <span className="text-gray-400">{'{'}</span>
-                    )}
-                  </div>
-                  <div className="text-cyan-400 ml-4 my-1">
-                    robot.collect({level.collectible});
-                  </div>
-                  <div className="text-gray-400">{'}'}</div>
-                </>
-              )}
-            </div>
-
-            <div className="mt-2 text-sm text-gray-500">
-              <span className="text-yellow-400">Hint:</span> {level.hint}
-            </div>
-          </div>
-
-          {/* Buttons */}
-          <div className="p-4 border-t border-slate-700 flex gap-2">
-            <motion.button
-              onClick={runLoop}
-              disabled={isRunning || (level.levelType === 'type' ? !userInput.trim() : (!userInput && !level.starterCode.includes('i-') && !level.starterCode.includes('i +=')))}
-              className={`flex-1 py-3 rounded-xl font-bold transition-all ${
-                isRunning
-                  ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-500 hover:to-pink-500'
-              }`}
-              whileHover={!isRunning ? { scale: 1.02 } : {}}
-              whileTap={!isRunning ? { scale: 0.98 } : {}}
+        {/* win overlay */}
+        <AnimatePresence>
+          {phase === 'win' && (
+            <motion.div
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             >
-              {isRunning ? '🤖 Robot Running...' : '▶️ Run Loop'}
-            </motion.button>
-
-            {showResult && (
-              <motion.button
-                onClick={resetLevel}
-                className="px-6 py-3 rounded-xl bg-white/10 text-gray-300 hover:bg-white/20"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
+              <motion.div
+                className="glass rounded-3xl p-6 sm:p-8 max-w-sm w-full text-center border border-emerald-500/30"
+                initial={{ scale: 0.8, y: 20 }} animate={{ scale: 1, y: 0 }}
               >
-                🔄
-              </motion.button>
-            )}
-          </div>
-        </motion.div>
-
-        {/* Next Level Button */}
-        {showResult === 'success' && (
-          <motion.div
-            className="text-center mb-4"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <motion.button
-              onClick={nextLevel}
-              className="px-8 py-4 rounded-xl bg-gradient-to-r from-green-600 to-cyan-600 text-white font-bold text-lg"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              {currentLevelIndex < levels.length - 1 ? 'Next Mission →' : '🏆 Complete Quest!'}
-            </motion.button>
-          </motion.div>
-        )}
-
-        {/* Loop Anatomy */}
-        <motion.div
-          className="bg-white/5 backdrop-blur rounded-2xl border border-white/10 p-4"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-        >
-          <h4 className="text-white font-bold mb-2">🔬 Loop Anatomy:</h4>
-          <div className="bg-slate-900/50 rounded-xl p-3 font-mono text-sm overflow-x-auto">
-            <div className="flex flex-wrap items-center gap-1">
-              <span className="text-purple-400">for</span>
-              <span className="text-gray-400">(</span>
-              <span className="px-2 py-0.5 bg-blue-500/20 rounded text-blue-400 text-xs">let i = 0</span>
-              <span className="text-gray-400">;</span>
-              <span className="px-2 py-0.5 bg-green-500/20 rounded text-green-400 text-xs">i &lt; 5</span>
-              <span className="text-gray-400">;</span>
-              <span className="px-2 py-0.5 bg-yellow-500/20 rounded text-yellow-400 text-xs">i++</span>
-              <span className="text-gray-400">)</span>
-            </div>
-            <div className="mt-2 grid grid-cols-3 gap-2 text-xs">
-              <div className="flex items-center gap-1">
-                <span className="w-2 h-2 bg-blue-500 rounded"></span>
-                <span className="text-gray-400">Start</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <span className="w-2 h-2 bg-green-500 rounded"></span>
-                <span className="text-gray-400">Condition</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <span className="w-2 h-2 bg-yellow-500 rounded"></span>
-                <span className="text-gray-400">Step</span>
-              </div>
-            </div>
-          </div>
-        </motion.div>
+                <div className="text-5xl mb-3">💥🎉</div>
+                <h2 className="text-2xl font-bold text-white mb-2">Enemies Destroyed!</h2>
+                <p className="text-gray-400 text-sm mb-1">
+                  {level.targetSeq.length} shot{level.targetSeq.length !== 1 && 's'} fired
+                </p>
+                <p className="text-emerald-400 text-xs mb-5">⭐⭐ Earned 2 stars</p>
+                <motion.button
+                  onClick={nextLevel}
+                  className="px-8 py-3 rounded-xl font-bold text-slate-950 bg-gradient-to-r from-orange-400 to-red-400 min-h-[48px]"
+                  whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+                >
+                  {levelIdx < levels.length - 1 ? 'Next Wave →' : 'Victory! 🏆'}
+                </motion.button>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
+        </>
+      )}
     </main>
   );
 }
