@@ -9,7 +9,7 @@ export default function NotFound() {
         </p>
         <h1 className="text-2xl font-bold text-white mb-2">Page not found</h1>
         <p className="text-slate-400 text-sm mb-8">
-          That route does not exist in LogiQuest. Check the address or head back to play.
+          That page is not part of LogiQ Quest (logiq.quest). Check the address or go home to keep learning programming and logic.
         </p>
         <div className="flex flex-wrap gap-3 justify-center">
           <Link

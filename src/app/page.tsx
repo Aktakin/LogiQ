@@ -101,9 +101,17 @@ function WelcomeScreen({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.4 }}
-        className="text-xl md:text-2xl text-gray-400 mb-8"
+        className="text-xl md:text-2xl text-gray-400 mb-3 max-w-xl mx-auto leading-snug"
       >
-        Discover the magic of logic through play!
+        Discover logic and coding through play — free games for kids learning programming.
+      </motion.p>
+      <motion.p
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.45 }}
+        className="text-sm md:text-base text-gray-500 mb-8 max-w-lg mx-auto leading-relaxed"
+      >
+        LogiQ Quest (logiq.quest): Code Quest, puzzles, and brain games that teach JavaScript ideas—variables, loops, conditions, and more — all in your browser.
       </motion.p>
 
       {/* Returning player greeting */}

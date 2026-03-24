@@ -79,6 +79,16 @@ const codeQuestGames: GameItem[] = [
     tags: ['Loops', 'Shooting'],
   },
   {
+    id: 'pattern-stack',
+    title: 'Lilyfall',
+    description: 'Pond Tetris: touch matching symbols to pop them and shrink the pond; clear full rows',
+    icon: '🐸',
+    href: '/games/programming/pattern-stack',
+    color: '#34d399',
+    tags: ['Tetris', 'Frog', 'Matching'],
+    isNew: true,
+  },
+  {
     id: 'conditions',
     title: 'Under One Condition',
     description: 'If, else, and choices — then block code with two routes',
