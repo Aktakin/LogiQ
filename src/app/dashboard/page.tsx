@@ -18,6 +18,7 @@ interface GameItem {
   color: string;
   tags?: string[];
   isNew?: boolean;
+  comingSoon?: boolean;
 }
 
 const codeQuestGames: GameItem[] = [
@@ -94,7 +95,7 @@ const codeQuestGames: GameItem[] = [
     href: '/games/programming/logic-leap',
     color: '#06b6d4',
     tags: ['Boolean', 'Operators'],
-    isNew: true,
+    comingSoon: true,
   },
   {
     id: 'debugging',
@@ -104,16 +105,6 @@ const codeQuestGames: GameItem[] = [
     href: '/games/programming/debugging',
     color: '#ef4444',
     tags: ['Debugging', 'Problem Solving'],
-    isNew: true,
-  },
-  {
-    id: 'funcky-frog',
-    title: 'FUNCky Frog',
-    description: 'Guide a frog through mazes — then learn to create functions!',
-    icon: '🐸',
-    href: '/games/programming/funcky-frog',
-    color: '#059669',
-    tags: ['Functions', 'Commands'],
     isNew: true,
   },
 ];
@@ -302,7 +293,7 @@ const programmingProjects: GameItem[] = [
     href: '/games/programming/projects/pick-a-card',
     color: '#10b981',
     tags: ['Lucky', 'Surprise', 'Arrays'],
-    isNew: true,
+    comingSoon: true,
   },
 ];
 
@@ -553,6 +544,56 @@ function GameCard({
   index: number;
   level: number;
 }) {
+  if (game.comingSoon) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: index * 0.05 }}
+        className="h-full p-5 rounded-2xl relative overflow-hidden opacity-65 cursor-not-allowed"
+        style={{
+          background: `linear-gradient(135deg, ${game.color}12, ${game.color}05)`,
+          border: `2px solid ${game.color}30`,
+        }}
+      >
+        <div
+          className="absolute top-3 right-3 px-2 py-0.5 rounded-full text-xs font-bold"
+          style={{ backgroundColor: `${game.color}30`, color: game.color }}
+        >
+          COMING SOON
+        </div>
+        <div
+          className="w-14 h-14 rounded-xl flex items-center justify-center text-3xl mb-3"
+          style={{
+            background: `linear-gradient(135deg, ${game.color}40, ${game.color}20)`,
+            boxShadow: `0 8px 20px ${game.color}30`,
+          }}
+        >
+          {game.icon}
+        </div>
+        <h3 className="text-base sm:text-lg font-bold text-white mb-1 line-clamp-2">{game.title}</h3>
+        <p className="text-gray-400 text-xs sm:text-sm mb-3 line-clamp-2">{game.description}</p>
+        {game.tags && (
+          <div className="flex flex-wrap gap-1 mb-3">
+            {game.tags.map((tag) => (
+              <span
+                key={tag}
+                className="px-2 py-0.5 rounded-full text-xs"
+                style={{ backgroundColor: `${game.color}20`, color: `${game.color}` }}
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-gray-500">Level {level}</span>
+          <span className="text-sm font-semibold text-gray-400">Soon</span>
+        </div>
+      </motion.div>
+    );
+  }
+
   return (
     <Link href={game.href}>
       <motion.div

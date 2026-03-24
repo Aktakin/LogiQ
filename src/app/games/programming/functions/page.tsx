@@ -229,7 +229,7 @@ const levels: Level[] = [
       { x: 4, y: 1 }, { x: 4, y: 0 },
       { x: 5, y: 0 }, { x: 6, y: 0 }, { x: 7, y: 0 }
     ],
-    maxCommands: 8,
+    maxCommands: 9,
     maxFunctionCommands: 5,
     hint: 'Create functions that handle the tricky corners!',
   },
@@ -514,6 +514,12 @@ export default function FunctionsGame() {
 
   const nextLevel = () => {
     if (currentLevelIndex < levels.length - 1) {
+      // Clear level-specific state before switching levels to avoid
+      // rendering stale function calls against the next level's function list.
+      setCommands([]);
+      setCustomFunctions([]);
+      setEditingFunction(null);
+      setShowFunctionEditor(false);
       setCurrentLevelIndex(prev => prev + 1);
     } else {
       router.push('/games/programming');
@@ -679,13 +685,19 @@ export default function FunctionsGame() {
                 <div className="space-y-1">
                   {commands.map((cmd, index) => {
                     const func = cmd.type === 'function' ? allFunctions.find(f => f.id === cmd.functionId) : null;
+                    const commandMeta = cmd.type === 'command' && cmd.command ? commandIcons[cmd.command] : null;
+                    const leftBorder = func
+                      ? `3px solid ${func.color}`
+                      : commandMeta
+                        ? `3px solid ${commandMeta.color}`
+                        : '3px solid rgba(248, 113, 113, 0.8)';
                     return (
                       <motion.div
                         key={cmd.id}
                         className={`flex items-center gap-2 px-2 py-1.5 rounded-lg transition-all ${
                           executingIndex === index ? 'ring-2 ring-emerald-400 bg-emerald-500/15' : 'bg-white/5'
                         }`}
-                        style={{ borderLeft: func ? `3px solid ${func.color}` : `3px solid ${commandIcons[cmd.command!].color}` }}
+                        style={{ borderLeft: leftBorder }}
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
                       >
@@ -694,10 +706,15 @@ export default function FunctionsGame() {
                             <span>{func.emoji}</span>
                             <span className="text-white text-xs flex-1">{func.name}</span>
                           </>
+                        ) : commandMeta ? (
+                          <>
+                            <span className="text-base">{commandMeta.icon}</span>
+                            <span className="text-white text-xs flex-1">{commandMeta.label}</span>
+                          </>
                         ) : (
                           <>
-                            <span className="text-base">{commandIcons[cmd.command!].icon}</span>
-                            <span className="text-white text-xs flex-1">{commandIcons[cmd.command!].label}</span>
+                            <span className="text-base">⚠️</span>
+                            <span className="text-red-300 text-xs flex-1">Missing function</span>
                           </>
                         )}
                         {!isRunning && (
