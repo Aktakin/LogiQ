@@ -20,17 +20,43 @@ interface Category {
 
 const categories: Category[] = [
   {
+    id: 'code-critter',
+    title: 'Code Critter',
+    description: 'Help the bunny collect carrots using simple arrow commands! Perfect for beginners.',
+    icon: '🐰',
+    color: '#4ade80',
+    bgGradient: 'from-green-600/25 to-emerald-600/20',
+    levels: 30,
+    completed: 0,
+    locked: false,
+    comingSoon: false,
+    path: '/games/programming/code-critter',
+  },
+  {
     id: 'robot',
-    title: 'Robot Navigator',
-    description: 'Guide the robot through mazes using movement commands!',
-    icon: '🤖',
-    color: '#3b82f6',
-    bgGradient: 'from-blue-600/20 to-cyan-600/20',
-    levels: 12,
+    title: 'Frog Hop Quest',
+    description: 'Program hop, turn, and double-hop commands to reach the golden lily!',
+    icon: '🐸',
+    color: '#10b981',
+    bgGradient: 'from-emerald-600/25 to-teal-600/20',
+    levels: 15,
     completed: 0,
     locked: false,
     comingSoon: false,
     path: '/games/programming/robot',
+  },
+  {
+    id: 'frog-hop-quest-2',
+    title: 'Frog Hop Quest 2',
+    description: 'Massive maze ponds — only one path uses the fewest hops; detours cost extra steps!',
+    icon: '🧭',
+    color: '#059669',
+    bgGradient: 'from-emerald-700/25 to-cyan-700/20',
+    levels: 8,
+    completed: 0,
+    locked: false,
+    comingSoon: false,
+    path: '/games/programming/frog-hop-quest-2',
   },
   {
     id: 'functions',
@@ -44,6 +70,19 @@ const categories: Category[] = [
     locked: false,
     comingSoon: false,
     path: '/games/programming/functions',
+  },
+  {
+    id: 'event-pond',
+    title: 'Bell Lily Pond',
+    description: 'When you land on a bell, extra code runs — learn event-driven programming!',
+    icon: '🔔',
+    color: '#8b5cf6',
+    bgGradient: 'from-violet-600/25 to-indigo-600/20',
+    levels: 8,
+    completed: 0,
+    locked: false,
+    comingSoon: false,
+    path: '/games/programming/event-pond',
   },
   {
     id: 'variables',
@@ -339,10 +378,12 @@ export default function CodeQuestHub() {
           <div className="glass rounded-2xl p-4 sm:p-6 max-w-2xl mx-auto">
             <h3 className="text-base sm:text-lg font-semibold text-white mb-2">🎯 Learning Path</h3>
             <p className="text-gray-400 text-xs sm:text-sm">
-              Start with <span className="text-blue-400 font-semibold">Robot Navigator</span> to learn basic commands, 
-              then <span className="text-emerald-400 font-semibold">Frog Function Pond</span> for reusable code,
+              Start with <span className="text-green-400 font-semibold">Code Critter</span> for beginners (ages 6-9),
+              then <span className="text-emerald-400 font-semibold">Frog Hop Quest</span> to learn more commands, 
+              then <span className="text-teal-400 font-semibold">Frog Function Pond</span> for reusable code,
+              <span className="text-violet-400 font-semibold"> Bell Lily Pond</span> for events and reactions,
               <span className="text-pink-400 font-semibold"> Variable Vault</span> for data storage, 
-              <span className="text-purple-400 font-semibold"> Loop Master</span> for repetition, and
+              <span className="text-purple-400 font-semibold"> Loop Blaster</span> for repetition, and
               <span className="text-amber-400 font-semibold"> Under One Condition</span> for if, then, else!
             </p>
           </div>
