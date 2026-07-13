@@ -431,7 +431,20 @@ export default function ArrayPondGame() {
                 type="text"
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && !isCorrect && checkSolution()}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !isCorrect) {
+                    checkSolution();
+                    return;
+                  }
+                  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'v') {
+                    e.preventDefault();
+                  }
+                  if (e.shiftKey && e.key === 'Insert') {
+                    e.preventDefault();
+                  }
+                }}
+                onPaste={(e) => e.preventDefault()}
+                onDrop={(e) => e.preventDefault()}
                 disabled={isCorrect === true}
                 className="flex-1 bg-slate-800/50 text-emerald-400 px-3 py-2 rounded-lg border border-slate-600 focus:border-emerald-500 focus:outline-none font-mono"
                 placeholder="Type your code here..."
@@ -511,7 +524,7 @@ export default function ArrayPondGame() {
               exit={{ opacity: 0, y: -10 }}
               className="mt-4 text-center"
             >
-              <div className="inline-block bg-yellow-500/20 border border-yellow-500/30 rounded-xl px-6 py-3">
+              <div className="inline-block bg-yellow-500/20 border border-yellow-500/30 rounded-xl px-6 py-3 select-none">
                 <span className="text-yellow-400 font-mono">💡 {level.hint}</span>
               </div>
             </motion.div>
