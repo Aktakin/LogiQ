@@ -101,7 +101,7 @@ export default function RageRunnerGame() {
                 : b.type === 'WHEN_OBSTACLE_HIGH' ? 'obstacle_high' as const
                 : b.type === 'WHEN_COIN' ? 'coin_nearby' as const
                 : 'rage_ready' as const,
-              do: (b.action === 'jump' ? 'jump' : b.action === 'duck' ? 'duck' : b.action === 'rage' ? 'rage' : 'collect') as const,
+              do: (b.action === 'jump' ? 'jump' : b.action === 'duck' ? 'duck' : b.action === 'rage' ? 'rage' : 'collect') as RuleDo,
             })),
           ];
           setDesign({

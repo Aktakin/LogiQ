@@ -161,40 +161,43 @@ function ScriptBlockRow({
   const checkDir = block.checkDir ?? (tpl.condition === 'path_right' ? 'right' : 'left');
 
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: -4 }}
-      animate={{ opacity: dragging ? 0.4 : 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.96 }}
+    <div
       draggable={!isRunning}
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
       className={`group rounded-lg ${isRunning ? '' : 'cursor-grab active:cursor-grabbing'} ${active ? 'ring-2 ring-amber-400/70' : ''}`}
     >
-      <ScratchBlock color={tpl.color} variant="script">
-        <div className="flex items-center gap-2">
-          <span className="text-[10px] text-white/50 font-mono w-4">{index + 1}</span>
-          <div className="flex-1 min-w-0">
-            <BlockContent
-              block={block}
-              templateId={block.templateId}
-              editable={editable}
-              checkDir={checkDir}
-              onCheckDirChange={(dir) => onUpdate({ checkDir: dir })}
-              isRunning={isRunning}
-            />
+      <motion.div
+        layout
+        initial={{ opacity: 0, y: -4 }}
+        animate={{ opacity: dragging ? 0.4 : 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.96 }}
+      >
+        <ScratchBlock color={tpl.color} variant="script">
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] text-white/50 font-mono w-4">{index + 1}</span>
+            <div className="flex-1 min-w-0">
+              <BlockContent
+                block={block}
+                templateId={block.templateId}
+                editable={editable}
+                checkDir={checkDir}
+                onCheckDirChange={(dir) => onUpdate({ checkDir: dir })}
+                isRunning={isRunning}
+              />
+            </div>
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); onRemove(); }}
+              disabled={isRunning}
+              className="opacity-0 group-hover:opacity-100 w-6 h-6 rounded-full bg-black/25 hover:bg-red-500/40 text-xs transition-all disabled:opacity-30"
+            >
+              ×
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={(e) => { e.stopPropagation(); onRemove(); }}
-            disabled={isRunning}
-            className="opacity-0 group-hover:opacity-100 w-6 h-6 rounded-full bg-black/25 hover:bg-red-500/40 text-xs transition-all disabled:opacity-30"
-          >
-            ×
-          </button>
-        </div>
-      </ScratchBlock>
-    </motion.div>
+        </ScratchBlock>
+      </motion.div>
+    </div>
   );
 }
 

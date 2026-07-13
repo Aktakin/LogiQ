@@ -67,33 +67,36 @@ function ScriptBlock({
   const color = presetColor(rule.when);
 
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: -6 }}
-      animate={{ opacity: isDragging ? 0.35 : 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.95 }}
+    <div
       draggable
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
       className="cursor-grab active:cursor-grabbing group"
     >
-      <ScratchBlock color={color} variant="script">
-        <div className="flex items-center gap-2 text-xs sm:text-sm">
-          <span className="text-white/40 text-[10px] font-mono w-4">{index + 1}</span>
-          <span className="bg-black/25 px-1.5 py-0.5 rounded font-black text-[9px]">WHEN</span>
-          <span className="flex-1">{WHEN_LABELS[rule.when]}</span>
-          <span className="text-white/50 text-[10px]">→</span>
-          <span className="bg-black/25 px-1.5 py-0.5 rounded font-black text-[9px]">DO</span>
-          <span>{DO_LABELS[rule.do]}</span>
-          <button
-            onClick={(e) => { e.stopPropagation(); onRemove(); }}
-            className="opacity-0 group-hover:opacity-100 w-5 h-5 rounded-full bg-black/25 hover:bg-red-500/50 text-xs transition-all ml-1"
-          >
-            ×
-          </button>
-        </div>
-      </ScratchBlock>
-    </motion.div>
+      <motion.div
+        layout
+        initial={{ opacity: 0, y: -6 }}
+        animate={{ opacity: isDragging ? 0.35 : 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+      >
+        <ScratchBlock color={color} variant="script">
+          <div className="flex items-center gap-2 text-xs sm:text-sm">
+            <span className="text-white/40 text-[10px] font-mono w-4">{index + 1}</span>
+            <span className="bg-black/25 px-1.5 py-0.5 rounded font-black text-[9px]">WHEN</span>
+            <span className="flex-1">{WHEN_LABELS[rule.when]}</span>
+            <span className="text-white/50 text-[10px]">→</span>
+            <span className="bg-black/25 px-1.5 py-0.5 rounded font-black text-[9px]">DO</span>
+            <span>{DO_LABELS[rule.do]}</span>
+            <button
+              onClick={(e) => { e.stopPropagation(); onRemove(); }}
+              className="opacity-0 group-hover:opacity-100 w-5 h-5 rounded-full bg-black/25 hover:bg-red-500/50 text-xs transition-all ml-1"
+            >
+              ×
+            </button>
+          </div>
+        </ScratchBlock>
+      </motion.div>
+    </div>
   );
 }
 
