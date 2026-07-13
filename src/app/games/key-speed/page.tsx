@@ -18,7 +18,7 @@ interface FallingLetter {
 }
 
 type GameState = 'menu' | 'playing' | 'gameover';
-type Difficulty = 'easy' | 'medium' | 'hard';
+type Difficulty = 'beginner' | 'easy' | 'medium' | 'hard' | 'expert';
 
 const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 const NUMBERS = '0123456789';
@@ -42,19 +42,62 @@ export default function KeySpeedGame() {
   const [correctTyped, setCorrectTyped] = useState(0);
   const [lastHit, setLastHit] = useState<{ letter: string; points: number; x: number; y: number } | null>(null);
   const [streak, setStreak] = useState(0);
+  const [earnedBadges, setEarnedBadges] = useState<number[]>([]);
+  const [newBadge, setNewBadge] = useState<number | null>(null);
 
   const letterIdRef = useRef(0);
+  const lastLetterRef = useRef<string>('');
+  const repeatCountRef = useRef(0);
+  const correctTypedRef = useRef(0);
+
+  const milestones = [
+    { chars: 100 },
+    { chars: 200 },
+    { chars: 300 },
+    { chars: 400 },
+    { chars: 500 },
+    { chars: 600 },
+    { chars: 700 },
+    { chars: 800 },
+    { chars: 900 },
+    { chars: 1000 },
+  ];
 
   const difficultySettings = {
-    easy: { spawnRate: 1500, speed: 1, chars: LETTERS.slice(0, 10) },
-    medium: { spawnRate: 1000, speed: 1.5, chars: LETTERS },
-    hard: { spawnRate: 700, speed: 2, chars: LETTERS + NUMBERS },
+    beginner: { spawnRate: 3500, speed: 0.3, chars: LETTERS.slice(0, 5), points: 5 },
+    easy: { spawnRate: 1800, speed: 0.8, chars: LETTERS.slice(0, 10), points: 10 },
+    medium: { spawnRate: 1300, speed: 1.2, chars: LETTERS, points: 15 },
+    hard: { spawnRate: 900, speed: 1.6, chars: LETTERS, points: 20 },
+    expert: { spawnRate: 600, speed: 2.2, chars: LETTERS + NUMBERS, points: 25 },
   };
 
   const spawnLetter = useCallback(() => {
     const settings = difficultySettings[difficulty];
     const chars = settings.chars;
-    const letter = chars[Math.floor(Math.random() * chars.length)];
+    
+    let letter: string;
+    
+    // For beginner mode, repeat letters but reduce repetition as player progresses
+    if (difficulty === 'beginner') {
+      if (repeatCountRef.current <= 0 || !lastLetterRef.current) {
+        // Pick a new letter and set repeat count based on progress
+        letter = chars[Math.floor(Math.random() * chars.length)];
+        lastLetterRef.current = letter;
+        
+        // Calculate repeat count based on how many correct letters typed
+        // Start: 4-6 repeats, gradually reduce to 1-2 as they improve
+        const progress = Math.min(correctTypedRef.current / 200, 1); // Max out at 200 chars
+        const minRepeats = Math.max(1, Math.floor(4 - progress * 3)); // 4 -> 1
+        const maxRepeats = Math.max(2, Math.floor(6 - progress * 4)); // 6 -> 2
+        repeatCountRef.current = minRepeats + Math.floor(Math.random() * (maxRepeats - minRepeats + 1));
+      } else {
+        // Use the same letter
+        letter = lastLetterRef.current;
+        repeatCountRef.current -= 1;
+      }
+    } else {
+      letter = chars[Math.floor(Math.random() * chars.length)];
+    }
 
     letterIdRef.current += 1;
     const newLetter: FallingLetter = {
@@ -63,7 +106,7 @@ export default function KeySpeedGame() {
       x: Math.random() * 80 + 10,
       y: -5,
       speed: settings.speed * (0.8 + Math.random() * 0.4),
-      points: difficulty === 'easy' ? 10 : difficulty === 'medium' ? 15 : 20,
+      points: settings.points,
       spawnTime: Date.now(),
     };
 
@@ -189,16 +232,42 @@ export default function KeySpeedGame() {
     setDifficulty(diff);
     setGameState('playing');
     setScore(0);
-    setLives(3);
+    // More lives for easier modes
+    const livesMap = { beginner: 5, easy: 4, medium: 3, hard: 3, expert: 2 };
+    setLives(livesMap[diff]);
     setCombo(0);
     setMaxCombo(0);
     setStreak(0);
     setTotalTyped(0);
     setCorrectTyped(0);
     setLetters([]);
+    setEarnedBadges([]);
+    setNewBadge(null);
+    // Reset repeat tracking for beginner mode
+    lastLetterRef.current = '';
+    repeatCountRef.current = 0;
+    correctTypedRef.current = 0;
   };
 
   const accuracy = totalTyped > 0 ? Math.round((correctTyped / totalTyped) * 100) : 0;
+
+  // Sync correctTyped with ref for use in spawnLetter
+  useEffect(() => {
+    correctTypedRef.current = correctTyped;
+  }, [correctTyped]);
+
+  // Check for milestone achievements based on characters typed
+  useEffect(() => {
+    if (gameState !== 'playing') return;
+    
+    milestones.forEach((milestone) => {
+      if (correctTyped >= milestone.chars && !earnedBadges.includes(milestone.chars)) {
+        setEarnedBadges((prev) => [...prev, milestone.chars]);
+        setNewBadge(milestone.chars);
+        setTimeout(() => setNewBadge(null), 2500);
+      }
+    });
+  }, [correctTyped, gameState, earnedBadges]);
 
   return (
     <main className="min-h-screen min-h-[100dvh] p-2 sm:p-4 relative overflow-hidden bg-gradient-to-b from-indigo-950/90 via-purple-950/50 to-slate-950">
@@ -288,38 +357,65 @@ export default function KeySpeedGame() {
 
               <div className="text-white font-bold mb-4">Choose Difficulty:</div>
               
-              <div className="flex flex-wrap justify-center gap-3 mb-6">
+              <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mb-6">
+                <motion.button
+                  onClick={() => startGame('beginner')}
+                  className="px-4 py-3 rounded-xl bg-cyan-500/30 border-2 border-cyan-500 text-white"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <div className="text-2xl mb-1">🐣</div>
+                  <div className="font-bold text-sm">Beginner</div>
+                  <div className="text-[10px] text-cyan-300">A-E only</div>
+                  <div className="text-[10px] text-cyan-300">Super slow</div>
+                </motion.button>
+
                 <motion.button
                   onClick={() => startGame('easy')}
-                  className="px-6 py-4 rounded-xl bg-green-500/30 border-2 border-green-500 text-white"
+                  className="px-4 py-3 rounded-xl bg-green-500/30 border-2 border-green-500 text-white"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
                   <div className="text-2xl mb-1">🌱</div>
-                  <div className="font-bold">Easy</div>
-                  <div className="text-xs text-green-300">A-J only</div>
+                  <div className="font-bold text-sm">Easy</div>
+                  <div className="text-[10px] text-green-300">A-J only</div>
+                  <div className="text-[10px] text-green-300">Slow</div>
                 </motion.button>
                 
                 <motion.button
                   onClick={() => startGame('medium')}
-                  className="px-6 py-4 rounded-xl bg-yellow-500/30 border-2 border-yellow-500 text-white"
+                  className="px-4 py-3 rounded-xl bg-yellow-500/30 border-2 border-yellow-500 text-white"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
                   <div className="text-2xl mb-1">🔥</div>
-                  <div className="font-bold">Medium</div>
-                  <div className="text-xs text-yellow-300">A-Z letters</div>
+                  <div className="font-bold text-sm">Medium</div>
+                  <div className="text-[10px] text-yellow-300">A-Z letters</div>
+                  <div className="text-[10px] text-yellow-300">Normal</div>
                 </motion.button>
                 
                 <motion.button
                   onClick={() => startGame('hard')}
-                  className="px-6 py-4 rounded-xl bg-red-500/30 border-2 border-red-500 text-white"
+                  className="px-4 py-3 rounded-xl bg-orange-500/30 border-2 border-orange-500 text-white"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <div className="text-2xl mb-1">💪</div>
+                  <div className="font-bold text-sm">Hard</div>
+                  <div className="text-[10px] text-orange-300">A-Z letters</div>
+                  <div className="text-[10px] text-orange-300">Fast</div>
+                </motion.button>
+
+                <motion.button
+                  onClick={() => startGame('expert')}
+                  className="px-4 py-3 rounded-xl bg-red-500/30 border-2 border-red-500 text-white"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
                   <div className="text-2xl mb-1">💀</div>
-                  <div className="font-bold">Hard</div>
-                  <div className="text-xs text-red-300">A-Z + 0-9</div>
+                  <div className="font-bold text-sm">Expert</div>
+                  <div className="text-[10px] text-red-300">A-Z + 0-9</div>
+                  <div className="text-[10px] text-red-300">Very fast</div>
                 </motion.button>
               </div>
 
@@ -424,6 +520,57 @@ export default function KeySpeedGame() {
                 <span className="text-gray-400">Max Combo: <span className="text-orange-400">{maxCombo}</span></span>
                 <span className="text-gray-400">Mode: <span className="text-purple-400 capitalize">{difficulty}</span></span>
               </div>
+
+              {/* Earned Badges - Bottom Corner */}
+              {earnedBadges.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="fixed bottom-4 left-4 z-30"
+                >
+                  <div className="glass rounded-xl p-2 flex items-center gap-2">
+                    <span className="text-xs text-gray-400">🏅</span>
+                    <div className="flex gap-1">
+                      {earnedBadges.map((badge) => (
+                        <motion.div
+                          key={badge}
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          className="px-2 py-1 rounded-lg bg-gradient-to-br from-yellow-500/30 to-orange-500/30 border border-yellow-500/50 flex items-center justify-center"
+                        >
+                          <span className="text-yellow-400 font-bold text-sm">{badge}</span>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* New Badge Popup */}
+              <AnimatePresence>
+                {newBadge && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.5, y: 50 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.5, y: -50 }}
+                    className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 pointer-events-none"
+                  >
+                    <div className="glass rounded-2xl p-6 text-center border-2 border-yellow-500 shadow-lg shadow-yellow-500/30">
+                      <motion.div
+                        animate={{ scale: [1, 1.2, 1] }}
+                        transition={{ duration: 0.5, repeat: 3 }}
+                        className="mb-2"
+                      >
+                        <div className="w-20 h-20 mx-auto rounded-xl bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center shadow-lg">
+                          <span className="text-3xl font-black text-white">{newBadge}</span>
+                        </div>
+                      </motion.div>
+                      <div className="text-yellow-400 font-bold text-lg">🎉 Badge Earned!</div>
+                      <div className="text-white font-bold">{newBadge} Keys Typed!</div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </motion.div>
           )}
 
@@ -462,6 +609,25 @@ export default function KeySpeedGame() {
                 >
                   🏆 New High Score!
                 </motion.p>
+              )}
+
+              {/* Earned Badges Display */}
+              {earnedBadges.length > 0 && (
+                <div className="mb-4">
+                  <div className="text-gray-400 text-sm mb-2">🏅 Badges Earned:</div>
+                  <div className="flex flex-wrap justify-center gap-2">
+                    {earnedBadges.map((badge) => (
+                      <motion.div
+                        key={badge}
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center shadow-md"
+                      >
+                        <span className="text-white font-black text-sm">{badge}</span>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
               )}
 
               <div className="flex gap-3 justify-center">

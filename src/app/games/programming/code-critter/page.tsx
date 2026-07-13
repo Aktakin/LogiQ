@@ -23,6 +23,7 @@ interface Level {
   obstacles: Position[];
   maxCommands: number;
   hint: string;
+  isChallenge?: boolean;
 }
 
 const directionIcons: Record<Direction, { icon: string; label: string; color: string }> = {
@@ -33,315 +34,84 @@ const directionIcons: Record<Direction, { icon: string; label: string; color: st
 };
 
 const levels: Level[] = [
-  // === BEGINNER (Levels 1-10): 3x3 grid, learning basics ===
-  {
-    id: 1,
-    name: 'First Steps',
-    gridSize: 3,
-    bunnyStart: { x: 0, y: 1 },
-    carrots: [{ x: 2, y: 1 }],
-    obstacles: [],
-    maxCommands: 4,
-    hint: 'Move right twice to get the carrot!',
-  },
-  {
-    id: 2,
-    name: 'Going Up',
-    gridSize: 3,
-    bunnyStart: { x: 1, y: 2 },
-    carrots: [{ x: 1, y: 0 }],
-    obstacles: [],
-    maxCommands: 4,
-    hint: 'Move up twice!',
-  },
-  {
-    id: 3,
-    name: 'Down the Hill',
-    gridSize: 3,
-    bunnyStart: { x: 1, y: 0 },
-    carrots: [{ x: 1, y: 2 }],
-    obstacles: [],
-    maxCommands: 4,
-    hint: 'Move down twice!',
-  },
-  {
-    id: 4,
-    name: 'Corner Carrot',
-    gridSize: 3,
-    bunnyStart: { x: 0, y: 2 },
-    carrots: [{ x: 2, y: 0 }],
-    obstacles: [],
-    maxCommands: 5,
-    hint: 'Go right, then up to reach the corner!',
-  },
-  {
-    id: 5,
-    name: 'Other Corner',
-    gridSize: 3,
-    bunnyStart: { x: 2, y: 0 },
-    carrots: [{ x: 0, y: 2 }],
-    obstacles: [],
-    maxCommands: 5,
-    hint: 'Go left, then down!',
-  },
-  {
-    id: 6,
-    name: 'Two Treats',
-    gridSize: 3,
-    bunnyStart: { x: 0, y: 0 },
-    carrots: [{ x: 2, y: 0 }, { x: 2, y: 2 }],
-    obstacles: [],
-    maxCommands: 5,
-    hint: 'Collect both carrots! Go right first.',
-  },
-  {
-    id: 7,
-    name: 'L-Shape',
-    gridSize: 3,
-    bunnyStart: { x: 0, y: 0 },
-    carrots: [{ x: 0, y: 2 }, { x: 2, y: 2 }],
-    obstacles: [],
-    maxCommands: 5,
-    hint: 'Make an L shape - down then right!',
-  },
-  {
-    id: 8,
-    name: 'Around the Rock',
-    gridSize: 3,
-    bunnyStart: { x: 0, y: 1 },
-    carrots: [{ x: 2, y: 1 }],
-    obstacles: [{ x: 1, y: 1 }],
-    maxCommands: 5,
-    hint: 'There\'s a rock in the way! Go around it.',
-  },
-  {
-    id: 9,
-    name: 'Rocky Corner',
-    gridSize: 3,
-    bunnyStart: { x: 0, y: 0 },
-    carrots: [{ x: 2, y: 2 }],
-    obstacles: [{ x: 1, y: 1 }],
-    maxCommands: 5,
-    hint: 'Go around the rock in the middle!',
-  },
-  {
-    id: 10,
-    name: 'Triple Snack',
-    gridSize: 3,
-    bunnyStart: { x: 0, y: 0 },
-    carrots: [{ x: 1, y: 0 }, { x: 2, y: 0 }, { x: 2, y: 1 }],
-    obstacles: [],
-    maxCommands: 4,
-    hint: 'Follow the carrot trail!',
-  },
-
-  // === EASY (Levels 11-15): 4x4 grid, more space ===
-  {
-    id: 11,
-    name: 'Bigger Garden',
-    gridSize: 4,
-    bunnyStart: { x: 0, y: 0 },
-    carrots: [{ x: 3, y: 0 }],
-    obstacles: [],
-    maxCommands: 5,
-    hint: 'The garden is bigger now! Go right three times.',
-  },
-  {
-    id: 12,
-    name: 'Long Walk',
-    gridSize: 4,
-    bunnyStart: { x: 0, y: 3 },
-    carrots: [{ x: 3, y: 0 }],
-    obstacles: [],
-    maxCommands: 7,
-    hint: 'Walk across and up the garden!',
-  },
-  {
-    id: 13,
-    name: 'Carrot Trail',
-    gridSize: 4,
-    bunnyStart: { x: 0, y: 0 },
-    carrots: [{ x: 1, y: 0 }, { x: 2, y: 0 }, { x: 3, y: 0 }],
-    obstacles: [],
-    maxCommands: 5,
-    hint: 'Follow the trail of carrots!',
-  },
-  {
-    id: 14,
-    name: 'Zigzag Path',
-    gridSize: 4,
-    bunnyStart: { x: 0, y: 3 },
-    carrots: [{ x: 3, y: 0 }],
-    obstacles: [{ x: 1, y: 2 }, { x: 2, y: 1 }],
-    maxCommands: 8,
-    hint: 'Zigzag around the rocks!',
-  },
-  {
-    id: 15,
-    name: 'Four Corners',
-    gridSize: 4,
-    bunnyStart: { x: 0, y: 0 },
-    carrots: [{ x: 3, y: 0 }, { x: 3, y: 3 }],
-    obstacles: [],
-    maxCommands: 7,
-    hint: 'Visit two corners of the garden!',
-  },
-
-  // === MEDIUM (Levels 16-20): 4x4 with obstacles ===
-  {
-    id: 16,
-    name: 'Rock Garden',
-    gridSize: 4,
-    bunnyStart: { x: 0, y: 0 },
-    carrots: [{ x: 3, y: 3 }],
-    obstacles: [{ x: 1, y: 1 }, { x: 2, y: 2 }],
-    maxCommands: 8,
-    hint: 'Navigate around the diagonal rocks!',
-  },
-  {
-    id: 17,
-    name: 'The Wall',
-    gridSize: 4,
-    bunnyStart: { x: 0, y: 1 },
-    carrots: [{ x: 3, y: 1 }],
-    obstacles: [{ x: 2, y: 0 }, { x: 2, y: 1 }, { x: 2, y: 2 }],
-    maxCommands: 8,
-    hint: 'There\'s a wall of rocks - go around it!',
-  },
-  {
-    id: 18,
-    name: 'Square Dance',
-    gridSize: 4,
-    bunnyStart: { x: 0, y: 0 },
-    carrots: [{ x: 3, y: 0 }, { x: 3, y: 3 }, { x: 0, y: 3 }],
-    obstacles: [{ x: 1, y: 1 }, { x: 2, y: 2 }],
-    maxCommands: 10,
-    hint: 'Go around the edges to collect all carrots!',
-  },
-  {
-    id: 19,
-    name: 'Maze Runner',
-    gridSize: 4,
-    bunnyStart: { x: 0, y: 3 },
-    carrots: [{ x: 3, y: 0 }],
-    obstacles: [{ x: 1, y: 1 }, { x: 1, y: 2 }, { x: 2, y: 1 }],
-    maxCommands: 8,
-    hint: 'Find the path through the rocks!',
-  },
-  {
-    id: 20,
-    name: 'Treasure Hunt',
-    gridSize: 4,
-    bunnyStart: { x: 0, y: 2 },
-    carrots: [{ x: 1, y: 0 }, { x: 3, y: 2 }, { x: 2, y: 3 }],
-    obstacles: [{ x: 1, y: 2 }, { x: 2, y: 1 }],
-    maxCommands: 10,
-    hint: 'Plan your route to get all three carrots!',
-  },
-
-  // === CHALLENGING (Levels 21-25): 5x5 grid ===
-  {
-    id: 21,
-    name: 'Big Field',
-    gridSize: 5,
-    bunnyStart: { x: 0, y: 4 },
-    carrots: [{ x: 4, y: 0 }],
-    obstacles: [],
-    maxCommands: 9,
-    hint: 'Cross the big field diagonally!',
-  },
-  {
-    id: 22,
-    name: 'Snake Path',
-    gridSize: 5,
-    bunnyStart: { x: 0, y: 0 },
-    carrots: [{ x: 4, y: 4 }],
-    obstacles: [{ x: 1, y: 1 }, { x: 2, y: 2 }, { x: 3, y: 3 }],
-    maxCommands: 10,
-    hint: 'Slither like a snake around the rocks!',
-  },
-  {
-    id: 23,
-    name: 'The Corridor',
-    gridSize: 5,
-    bunnyStart: { x: 0, y: 2 },
-    carrots: [{ x: 4, y: 2 }],
-    obstacles: [{ x: 1, y: 1 }, { x: 1, y: 3 }, { x: 2, y: 1 }, { x: 2, y: 3 }, { x: 3, y: 1 }, { x: 3, y: 3 }],
-    maxCommands: 6,
-    hint: 'Walk through the corridor!',
-  },
-  {
-    id: 24,
-    name: 'Five Feast',
-    gridSize: 5,
-    bunnyStart: { x: 0, y: 0 },
-    carrots: [{ x: 1, y: 0 }, { x: 2, y: 0 }, { x: 3, y: 0 }, { x: 4, y: 0 }, { x: 4, y: 1 }],
-    obstacles: [],
-    maxCommands: 6,
-    hint: 'Collect all five carrots in a row!',
-  },
-  {
-    id: 25,
-    name: 'Around the Lake',
-    gridSize: 5,
-    bunnyStart: { x: 0, y: 0 },
-    carrots: [{ x: 4, y: 4 }],
-    obstacles: [{ x: 1, y: 1 }, { x: 1, y: 2 }, { x: 1, y: 3 }, { x: 2, y: 1 }, { x: 2, y: 2 }, { x: 2, y: 3 }, { x: 3, y: 1 }, { x: 3, y: 2 }, { x: 3, y: 3 }],
-    maxCommands: 10,
-    hint: 'The lake is in the middle - go around it!',
-  },
-
-  // === EXPERT (Levels 26-30): 5x5 challenging ===
-  {
-    id: 26,
-    name: 'Rocky Road',
-    gridSize: 5,
-    bunnyStart: { x: 0, y: 4 },
-    carrots: [{ x: 4, y: 0 }],
-    obstacles: [{ x: 1, y: 3 }, { x: 2, y: 2 }, { x: 3, y: 1 }, { x: 2, y: 4 }, { x: 4, y: 2 }],
-    maxCommands: 10,
-    hint: 'Find the winding path through all the rocks!',
-  },
-  {
-    id: 27,
-    name: 'Carrot Kingdom',
-    gridSize: 5,
-    bunnyStart: { x: 2, y: 2 },
-    carrots: [{ x: 0, y: 0 }, { x: 4, y: 0 }, { x: 0, y: 4 }, { x: 4, y: 4 }],
-    obstacles: [{ x: 1, y: 2 }, { x: 3, y: 2 }],
-    maxCommands: 14,
-    hint: 'Collect carrots from all four corners!',
-  },
-  {
-    id: 28,
-    name: 'The Maze',
-    gridSize: 5,
-    bunnyStart: { x: 0, y: 0 },
-    carrots: [{ x: 4, y: 4 }],
-    obstacles: [{ x: 0, y: 2 }, { x: 1, y: 2 }, { x: 2, y: 2 }, { x: 2, y: 3 }, { x: 2, y: 4 }, { x: 4, y: 0 }, { x: 4, y: 1 }, { x: 4, y: 2 }],
-    maxCommands: 12,
-    hint: 'This is a real maze - find the only path!',
-  },
-  {
-    id: 29,
-    name: 'Six Pack',
-    gridSize: 5,
-    bunnyStart: { x: 0, y: 2 },
-    carrots: [{ x: 1, y: 0 }, { x: 3, y: 0 }, { x: 4, y: 2 }, { x: 3, y: 4 }, { x: 1, y: 4 }, { x: 2, y: 2 }],
-    obstacles: [{ x: 0, y: 0 }, { x: 4, y: 0 }, { x: 0, y: 4 }, { x: 4, y: 4 }],
-    maxCommands: 14,
-    hint: 'Collect all six carrots - plan carefully!',
-  },
-  {
-    id: 30,
-    name: 'Bunny Master',
-    gridSize: 5,
-    bunnyStart: { x: 0, y: 4 },
-    carrots: [{ x: 2, y: 4 }, { x: 4, y: 4 }, { x: 4, y: 2 }, { x: 4, y: 0 }, { x: 2, y: 0 }, { x: 0, y: 0 }],
-    obstacles: [{ x: 1, y: 1 }, { x: 1, y: 2 }, { x: 1, y: 3 }, { x: 2, y: 2 }, { x: 3, y: 1 }, { x: 3, y: 2 }, { x: 3, y: 3 }],
-    maxCommands: 16,
-    hint: 'The ultimate challenge! Collect all carrots around the rocky center!',
-  },
+  // === BEGINNER (3x3 grid) ===
+  { id: 1, name: 'First Steps', gridSize: 3, bunnyStart: { x: 0, y: 1 }, carrots: [{ x: 2, y: 1 }], obstacles: [], maxCommands: 4, hint: 'Move right twice to get the carrot!' },
+  { id: 2, name: 'Going Up', gridSize: 3, bunnyStart: { x: 1, y: 2 }, carrots: [{ x: 1, y: 0 }], obstacles: [], maxCommands: 4, hint: 'Move up twice!' },
+  { id: 3, name: 'Down the Hill', gridSize: 3, bunnyStart: { x: 1, y: 0 }, carrots: [{ x: 1, y: 2 }], obstacles: [], maxCommands: 4, hint: 'Move down twice!' },
+  { id: 4, name: 'Corner Carrot', gridSize: 3, bunnyStart: { x: 0, y: 2 }, carrots: [{ x: 2, y: 0 }], obstacles: [], maxCommands: 5, hint: 'Go right, then up to reach the corner!' },
+  
+  // ⭐ CHALLENGE LEVEL
+  { id: 5, name: 'First Challenge', gridSize: 5, bunnyStart: { x: 0, y: 4 }, carrots: [{ x: 4, y: 0 }, { x: 2, y: 2 }], obstacles: [{ x: 1, y: 3 }, { x: 2, y: 3 }, { x: 3, y: 1 }, { x: 3, y: 2 }], maxCommands: 12, hint: 'Your first real challenge! Navigate through the rocks to get both carrots.', isChallenge: true },
+  
+  { id: 6, name: 'Other Corner', gridSize: 3, bunnyStart: { x: 2, y: 0 }, carrots: [{ x: 0, y: 2 }], obstacles: [], maxCommands: 5, hint: 'Go left, then down!' },
+  { id: 7, name: 'Two Treats', gridSize: 3, bunnyStart: { x: 0, y: 0 }, carrots: [{ x: 2, y: 0 }, { x: 2, y: 2 }], obstacles: [], maxCommands: 5, hint: 'Collect both carrots! Go right first.' },
+  { id: 8, name: 'L-Shape', gridSize: 3, bunnyStart: { x: 0, y: 0 }, carrots: [{ x: 0, y: 2 }, { x: 2, y: 2 }], obstacles: [], maxCommands: 5, hint: 'Make an L shape - down then right!' },
+  { id: 9, name: 'Around the Rock', gridSize: 3, bunnyStart: { x: 0, y: 1 }, carrots: [{ x: 2, y: 1 }], obstacles: [{ x: 1, y: 1 }], maxCommands: 5, hint: 'There\'s a rock in the way! Go around it.' },
+  
+  // ⭐ CHALLENGE LEVEL
+  { id: 10, name: 'Double Trouble', gridSize: 5, bunnyStart: { x: 0, y: 0 }, carrots: [{ x: 4, y: 4 }, { x: 2, y: 0 }], obstacles: [{ x: 1, y: 1 }, { x: 2, y: 2 }, { x: 3, y: 3 }, { x: 1, y: 3 }], maxCommands: 12, hint: 'Navigate around multiple rocks to get both carrots!', isChallenge: true },
+  
+  { id: 11, name: 'Rocky Corner', gridSize: 3, bunnyStart: { x: 0, y: 0 }, carrots: [{ x: 2, y: 2 }], obstacles: [{ x: 1, y: 1 }], maxCommands: 5, hint: 'Go around the rock in the middle!' },
+  { id: 12, name: 'Triple Snack', gridSize: 3, bunnyStart: { x: 0, y: 0 }, carrots: [{ x: 1, y: 0 }, { x: 2, y: 0 }, { x: 2, y: 1 }], obstacles: [], maxCommands: 4, hint: 'Follow the carrot trail!' },
+  
+  // === EASY (4x4 grid) ===
+  { id: 13, name: 'Bigger Garden', gridSize: 4, bunnyStart: { x: 0, y: 0 }, carrots: [{ x: 3, y: 0 }], obstacles: [], maxCommands: 5, hint: 'The garden is bigger now! Go right three times.' },
+  { id: 14, name: 'Long Walk', gridSize: 4, bunnyStart: { x: 0, y: 3 }, carrots: [{ x: 3, y: 0 }], obstacles: [], maxCommands: 7, hint: 'Walk across and up the garden!' },
+  
+  // ⭐ CHALLENGE LEVEL  
+  { id: 15, name: 'Wall Climb', gridSize: 5, bunnyStart: { x: 0, y: 2 }, carrots: [{ x: 4, y: 2 }, { x: 4, y: 0 }], obstacles: [{ x: 2, y: 0 }, { x: 2, y: 1 }, { x: 2, y: 2 }, { x: 2, y: 3 }, { x: 2, y: 4 }], maxCommands: 14, hint: 'A massive wall blocks you! Find the only way around.', isChallenge: true },
+  
+  { id: 16, name: 'Carrot Trail', gridSize: 4, bunnyStart: { x: 0, y: 0 }, carrots: [{ x: 1, y: 0 }, { x: 2, y: 0 }, { x: 3, y: 0 }], obstacles: [], maxCommands: 5, hint: 'Follow the trail of carrots!' },
+  { id: 17, name: 'Zigzag Path', gridSize: 4, bunnyStart: { x: 0, y: 3 }, carrots: [{ x: 3, y: 0 }], obstacles: [{ x: 1, y: 2 }, { x: 2, y: 1 }], maxCommands: 8, hint: 'Zigzag around the rocks!' },
+  { id: 18, name: 'Four Corners', gridSize: 4, bunnyStart: { x: 0, y: 0 }, carrots: [{ x: 3, y: 0 }, { x: 3, y: 3 }], obstacles: [], maxCommands: 7, hint: 'Visit two corners of the garden!' },
+  
+  // ⭐ CHALLENGE LEVEL
+  { id: 19, name: 'Lake Hop', gridSize: 5, bunnyStart: { x: 0, y: 0 }, carrots: [{ x: 4, y: 4 }, { x: 0, y: 4 }, { x: 4, y: 0 }], obstacles: [{ x: 1, y: 1 }, { x: 1, y: 2 }, { x: 1, y: 3 }, { x: 2, y: 1 }, { x: 2, y: 2 }, { x: 2, y: 3 }, { x: 3, y: 1 }, { x: 3, y: 2 }, { x: 3, y: 3 }], maxCommands: 16, hint: 'A huge lake blocks the middle! Collect all 3 carrots around it.', isChallenge: true },
+  
+  // === MEDIUM (4x4 with obstacles) ===
+  { id: 20, name: 'Rock Garden', gridSize: 4, bunnyStart: { x: 0, y: 0 }, carrots: [{ x: 3, y: 3 }], obstacles: [{ x: 1, y: 1 }, { x: 2, y: 2 }], maxCommands: 8, hint: 'Navigate around the diagonal rocks!' },
+  { id: 21, name: 'The Wall', gridSize: 4, bunnyStart: { x: 0, y: 1 }, carrots: [{ x: 3, y: 1 }], obstacles: [{ x: 2, y: 0 }, { x: 2, y: 1 }, { x: 2, y: 2 }], maxCommands: 8, hint: 'There\'s a wall of rocks - go around it!' },
+  { id: 22, name: 'Square Dance', gridSize: 4, bunnyStart: { x: 0, y: 0 }, carrots: [{ x: 3, y: 0 }, { x: 3, y: 3 }, { x: 0, y: 3 }], obstacles: [{ x: 1, y: 1 }, { x: 2, y: 2 }], maxCommands: 10, hint: 'Go around the edges to collect all carrots!' },
+  
+  // ⭐ CHALLENGE LEVEL
+  { id: 23, name: 'Corridor Run', gridSize: 6, bunnyStart: { x: 0, y: 2 }, carrots: [{ x: 5, y: 2 }, { x: 5, y: 4 }], obstacles: [{ x: 1, y: 1 }, { x: 1, y: 3 }, { x: 2, y: 1 }, { x: 2, y: 3 }, { x: 3, y: 1 }, { x: 3, y: 3 }, { x: 4, y: 1 }, { x: 4, y: 3 }], maxCommands: 10, hint: 'Run through the long narrow corridor and grab both carrots!', isChallenge: true },
+  
+  { id: 24, name: 'Maze Runner', gridSize: 4, bunnyStart: { x: 0, y: 3 }, carrots: [{ x: 3, y: 0 }], obstacles: [{ x: 1, y: 1 }, { x: 1, y: 2 }, { x: 2, y: 1 }], maxCommands: 8, hint: 'Find the path through the rocks!' },
+  { id: 25, name: 'Treasure Hunt', gridSize: 4, bunnyStart: { x: 0, y: 2 }, carrots: [{ x: 1, y: 0 }, { x: 3, y: 2 }, { x: 2, y: 3 }], obstacles: [{ x: 1, y: 2 }, { x: 2, y: 1 }], maxCommands: 10, hint: 'Plan your route to get all three carrots!' },
+  
+  // === 5x5 grid ===
+  { id: 26, name: 'Big Field', gridSize: 5, bunnyStart: { x: 0, y: 4 }, carrots: [{ x: 4, y: 0 }], obstacles: [], maxCommands: 9, hint: 'Cross the big field diagonally!' },
+  
+  // ⭐ CHALLENGE LEVEL
+  { id: 27, name: 'Spiral Maze', gridSize: 6, bunnyStart: { x: 0, y: 0 }, carrots: [{ x: 3, y: 3 }, { x: 5, y: 5 }], obstacles: [{ x: 1, y: 0 }, { x: 1, y: 1 }, { x: 1, y: 2 }, { x: 1, y: 3 }, { x: 1, y: 4 }, { x: 2, y: 4 }, { x: 3, y: 4 }, { x: 4, y: 4 }, { x: 4, y: 2 }, { x: 3, y: 2 }, { x: 4, y: 3 }], maxCommands: 20, hint: 'Spiral your way through and collect both carrots!', isChallenge: true },
+  
+  { id: 28, name: 'Snake Path', gridSize: 5, bunnyStart: { x: 0, y: 0 }, carrots: [{ x: 4, y: 4 }], obstacles: [{ x: 1, y: 1 }, { x: 2, y: 2 }, { x: 3, y: 3 }], maxCommands: 10, hint: 'Slither like a snake around the rocks!' },
+  { id: 29, name: 'Five Feast', gridSize: 5, bunnyStart: { x: 0, y: 0 }, carrots: [{ x: 1, y: 0 }, { x: 2, y: 0 }, { x: 3, y: 0 }, { x: 4, y: 0 }, { x: 4, y: 1 }], obstacles: [], maxCommands: 6, hint: 'Collect all five carrots in a row!' },
+  { id: 30, name: 'Around the Lake', gridSize: 5, bunnyStart: { x: 0, y: 0 }, carrots: [{ x: 4, y: 4 }], obstacles: [{ x: 1, y: 1 }, { x: 1, y: 2 }, { x: 1, y: 3 }, { x: 2, y: 1 }, { x: 2, y: 2 }, { x: 2, y: 3 }, { x: 3, y: 1 }, { x: 3, y: 2 }, { x: 3, y: 3 }], maxCommands: 10, hint: 'The lake is in the middle - go around it!' },
+  
+  // ⭐ CHALLENGE LEVEL
+  { id: 31, name: 'Double Walls', gridSize: 6, bunnyStart: { x: 0, y: 2 }, carrots: [{ x: 5, y: 2 }, { x: 3, y: 5 }, { x: 5, y: 0 }], obstacles: [{ x: 2, y: 0 }, { x: 2, y: 1 }, { x: 2, y: 2 }, { x: 2, y: 3 }, { x: 4, y: 2 }, { x: 4, y: 3 }, { x: 4, y: 4 }, { x: 4, y: 5 }], maxCommands: 18, hint: 'Two massive walls block your path! Collect all 3 carrots.', isChallenge: true },
+  
+  // === EXPERT (5x5 challenging) ===
+  { id: 32, name: 'Rocky Road', gridSize: 5, bunnyStart: { x: 0, y: 4 }, carrots: [{ x: 4, y: 0 }], obstacles: [{ x: 1, y: 3 }, { x: 2, y: 2 }, { x: 3, y: 1 }, { x: 2, y: 4 }, { x: 4, y: 2 }], maxCommands: 10, hint: 'Find the winding path through all the rocks!' },
+  { id: 33, name: 'Carrot Kingdom', gridSize: 5, bunnyStart: { x: 0, y: 0 }, carrots: [{ x: 4, y: 0 }, { x: 4, y: 4 }, { x: 0, y: 4 }], obstacles: [{ x: 2, y: 1 }, { x: 2, y: 2 }, { x: 2, y: 3 }], maxCommands: 14, hint: 'Go around the wall to collect all three carrots!' },
+  
+  // ⭐ CHALLENGE LEVEL
+  { id: 34, name: 'The Labyrinth', gridSize: 6, bunnyStart: { x: 0, y: 5 }, carrots: [{ x: 5, y: 0 }, { x: 2, y: 0 }, { x: 4, y: 5 }], obstacles: [{ x: 1, y: 1 }, { x: 1, y: 2 }, { x: 1, y: 3 }, { x: 1, y: 4 }, { x: 3, y: 1 }, { x: 3, y: 2 }, { x: 3, y: 3 }, { x: 3, y: 4 }, { x: 3, y: 5 }, { x: 5, y: 2 }, { x: 5, y: 3 }, { x: 5, y: 4 }], maxCommands: 22, hint: 'Navigate the labyrinth and collect all 3 carrots!', isChallenge: true },
+  
+  { id: 35, name: 'The Maze', gridSize: 5, bunnyStart: { x: 0, y: 0 }, carrots: [{ x: 4, y: 4 }], obstacles: [{ x: 0, y: 2 }, { x: 1, y: 2 }, { x: 2, y: 2 }, { x: 2, y: 3 }, { x: 2, y: 4 }, { x: 4, y: 0 }, { x: 4, y: 1 }, { x: 4, y: 2 }], maxCommands: 12, hint: 'This is a real maze - find the only path!' },
+  { id: 36, name: 'Six Carrots', gridSize: 5, bunnyStart: { x: 0, y: 2 }, carrots: [{ x: 1, y: 0 }, { x: 3, y: 0 }, { x: 4, y: 2 }, { x: 3, y: 4 }, { x: 1, y: 4 }, { x: 2, y: 2 }], obstacles: [{ x: 0, y: 0 }, { x: 4, y: 0 }, { x: 0, y: 4 }, { x: 4, y: 4 }], maxCommands: 14, hint: 'Collect all six carrots - plan carefully!' },
+  
+  // ⭐ CHALLENGE LEVEL
+  { id: 37, name: 'Seven Stars', gridSize: 6, bunnyStart: { x: 0, y: 3 }, carrots: [{ x: 1, y: 1 }, { x: 3, y: 0 }, { x: 5, y: 1 }, { x: 5, y: 4 }, { x: 3, y: 5 }, { x: 1, y: 4 }, { x: 3, y: 3 }], obstacles: [{ x: 2, y: 2 }, { x: 4, y: 2 }, { x: 2, y: 3 }, { x: 4, y: 3 }, { x: 0, y: 0 }, { x: 5, y: 5 }], maxCommands: 26, hint: 'Collect all SEVEN carrots in the star pattern!', isChallenge: true },
+  
+  { id: 38, name: 'Bunny Master', gridSize: 5, bunnyStart: { x: 0, y: 4 }, carrots: [{ x: 2, y: 4 }, { x: 4, y: 4 }, { x: 4, y: 2 }, { x: 4, y: 0 }, { x: 2, y: 0 }, { x: 0, y: 0 }], obstacles: [{ x: 1, y: 1 }, { x: 1, y: 2 }, { x: 1, y: 3 }, { x: 2, y: 2 }, { x: 3, y: 1 }, { x: 3, y: 2 }, { x: 3, y: 3 }], maxCommands: 16, hint: 'Collect all carrots around the rocky center!' },
+  
+  // ⭐ CHALLENGE LEVEL
+  { id: 39, name: 'Fortress', gridSize: 6, bunnyStart: { x: 0, y: 0 }, carrots: [{ x: 3, y: 3 }, { x: 3, y: 2 }], obstacles: [{ x: 2, y: 1 }, { x: 3, y: 1 }, { x: 4, y: 1 }, { x: 2, y: 2 }, { x: 4, y: 2 }, { x: 2, y: 3 }, { x: 4, y: 3 }, { x: 2, y: 4 }, { x: 3, y: 4 }, { x: 4, y: 4 }, { x: 1, y: 2 }, { x: 1, y: 3 }], maxCommands: 16, hint: 'Break into the fortress and grab both carrots inside!', isChallenge: true },
+  
+  // FINAL LEVEL
+  { id: 40, name: '🏆 Grand Champion', gridSize: 6, bunnyStart: { x: 0, y: 5 }, carrots: [{ x: 2, y: 5 }, { x: 5, y: 5 }, { x: 5, y: 3 }, { x: 5, y: 0 }, { x: 3, y: 0 }, { x: 0, y: 0 }, { x: 0, y: 2 }, { x: 3, y: 3 }], obstacles: [{ x: 1, y: 1 }, { x: 1, y: 2 }, { x: 1, y: 3 }, { x: 1, y: 4 }, { x: 2, y: 2 }, { x: 2, y: 3 }, { x: 3, y: 1 }, { x: 3, y: 4 }, { x: 4, y: 2 }, { x: 4, y: 3 }], maxCommands: 24, hint: 'The ULTIMATE test! Collect all 8 carrots!' },
 ];
 
 export default function CodeCritterGame() {
@@ -492,23 +262,45 @@ export default function CodeCritterGame() {
 
   if (!level) return null;
 
-  const cellSize = level.gridSize === 3 ? 80 : 70;
+  const cellSize = level.gridSize === 3 ? 80 : level.gridSize <= 5 ? 70 : 60;
+  const isChallenge = level.isChallenge;
 
   return (
-    <main className="min-h-screen min-h-[100dvh] p-3 sm:p-4 md:p-6 relative overflow-hidden bg-gradient-to-b from-green-950/90 via-emerald-950/50 to-slate-950">
+    <main className={`min-h-screen min-h-[100dvh] p-3 sm:p-4 md:p-6 relative overflow-hidden ${
+      isChallenge 
+        ? 'bg-gradient-to-b from-purple-950/90 via-fuchsia-950/50 to-slate-950' 
+        : 'bg-gradient-to-b from-green-950/90 via-emerald-950/50 to-slate-950'
+    }`}>
       <FloatingShapes />
       <Confetti show={showConfetti} />
+
+      {/* Challenge Level Banner */}
+      {isChallenge && (
+        <motion.div
+          initial={{ opacity: 0, y: -50 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="absolute top-0 left-0 right-0 bg-gradient-to-r from-purple-600/80 via-fuchsia-500/80 to-purple-600/80 py-2 z-20"
+        >
+          <div className="flex items-center justify-center gap-2 text-white font-bold text-sm">
+            <span className="animate-pulse">⚡</span>
+            <span>CHALLENGE LEVEL</span>
+            <span className="animate-pulse">⚡</span>
+          </div>
+        </motion.div>
+      )}
 
       {/* Header */}
       <motion.header
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative z-10 mb-4"
+        className={`relative z-10 mb-4 ${isChallenge ? 'mt-8' : ''}`}
       >
         <div className="flex items-center justify-between flex-wrap gap-2">
           <motion.button
             onClick={() => router.push('/games/programming')}
-            className="glass px-3 py-2.5 rounded-xl text-gray-300 hover:text-white transition-colors text-sm min-h-[44px] touch-target"
+            className={`glass px-3 py-2.5 rounded-xl text-gray-300 hover:text-white transition-colors text-sm min-h-[44px] touch-target ${
+              isChallenge ? 'border border-purple-500/50' : ''
+            }`}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
@@ -516,13 +308,13 @@ export default function CodeCritterGame() {
           </motion.button>
 
           <div className="flex items-center gap-3">
-            <div className="glass px-3 py-1.5 rounded-xl text-center">
+            <div className={`glass px-3 py-1.5 rounded-xl text-center ${isChallenge ? 'border border-purple-500/50' : ''}`}>
               <div className="text-xs text-gray-400">Level</div>
-              <div className="text-lg font-bold text-white">
+              <div className={`text-lg font-bold ${isChallenge ? 'text-purple-300' : 'text-white'}`}>
                 {currentLevelIndex + 1}/{levels.length}
               </div>
             </div>
-            <div className="glass px-3 py-1.5 rounded-xl text-center">
+            <div className={`glass px-3 py-1.5 rounded-xl text-center ${isChallenge ? 'border border-purple-500/50' : ''}`}>
               <div className="text-xs text-gray-400">Score</div>
               <div className="text-lg font-bold text-yellow-400">⭐ {score}</div>
             </div>
@@ -533,9 +325,14 @@ export default function CodeCritterGame() {
       <div className="max-w-4xl mx-auto relative z-10">
         {/* Title */}
         <motion.div className="text-center mb-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-          <h1 className="text-2xl md:text-3xl font-bold text-white mb-1">🐰 {level.name}</h1>
-          <p className="text-gray-400 text-sm">
-            Help the bunny collect {level.carrots.length === 1 ? 'the carrot' : `all ${level.carrots.length} carrots`}!
+          <h1 className={`text-2xl md:text-3xl font-bold mb-1 ${isChallenge ? 'text-purple-200' : 'text-white'}`}>
+            {isChallenge ? '⚡' : '🐰'} {level.name} {isChallenge ? '⚡' : ''}
+          </h1>
+          <p className={`text-sm ${isChallenge ? 'text-purple-300' : 'text-gray-400'}`}>
+            {isChallenge 
+              ? `Challenge! Collect ${level.carrots.length === 1 ? 'the carrot' : `all ${level.carrots.length} carrots`} to prove your skills!`
+              : `Help the bunny collect ${level.carrots.length === 1 ? 'the carrot' : `all ${level.carrots.length} carrots`}!`
+            }
           </p>
         </motion.div>
 
@@ -544,7 +341,7 @@ export default function CodeCritterGame() {
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="glass rounded-2xl p-4 sm:p-6"
+            className={`glass rounded-2xl p-4 sm:p-6 ${isChallenge ? 'border-2 border-purple-500/50 shadow-lg shadow-purple-500/20' : ''}`}
           >
             <div
               className="grid gap-1 mx-auto"
@@ -567,10 +364,10 @@ export default function CodeCritterGame() {
                     key={idx}
                     className={`rounded-xl flex items-center justify-center relative ${
                       isObstacle
-                        ? 'bg-stone-700/60 border-2 border-stone-500/50'
+                        ? isChallenge ? 'bg-purple-900/60 border-2 border-purple-500/50' : 'bg-stone-700/60 border-2 border-stone-500/50'
                         : isStart && !isBunny
-                        ? 'bg-blue-500/20 border-2 border-blue-400/40'
-                        : 'bg-green-800/30 border-2 border-green-600/30'
+                        ? isChallenge ? 'bg-fuchsia-500/20 border-2 border-fuchsia-400/40' : 'bg-blue-500/20 border-2 border-blue-400/40'
+                        : isChallenge ? 'bg-purple-800/30 border-2 border-purple-600/30' : 'bg-green-800/30 border-2 border-green-600/30'
                     }`}
                     style={{ width: cellSize, height: cellSize }}
                     initial={{ opacity: 0 }}

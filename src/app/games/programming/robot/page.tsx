@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence, Reorder } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useGameStore } from '@/store/gameStore';
@@ -19,8 +19,8 @@ interface Level {
   id: number;
   name: string;
   gridSize: number;
-  robotStart: Position;
-  robotDirection: Direction;
+  frogStart: Position;
+  frogDirection: Direction;
   goal: Position;
   obstacles: Position[];
   path: Position[];
@@ -34,150 +34,155 @@ interface CommandBlock {
 }
 
 const commandIcons: Record<Command, { icon: string; label: string; color: string }> = {
-  forward: { icon: '⬆️', label: 'Move Forward', color: '#3b82f6' },
-  forward2: { icon: '⏫', label: 'Move 2', color: '#6366f1' },
-  left: { icon: '↩️', label: 'Turn Left', color: '#f59e0b' },
-  right: { icon: '↪️', label: 'Turn Right', color: '#10b981' },
+  forward: { icon: '🐸', label: 'Hop forward', color: '#34d399' },
+  forward2: { icon: '🐸⏫', label: 'Double hop', color: '#2dd4bf' },
+  left: { icon: '↩️', label: 'Turn left', color: '#f59e0b' },
+  right: { icon: '↪️', label: 'Turn right', color: '#10b981' },
 };
 
 const levels: Level[] = [
-  // Beginner levels
   {
     id: 1,
-    name: 'First Steps',
+    name: 'First Hop',
     gridSize: 4,
-    robotStart: { x: 0, y: 3 },
-    robotDirection: 'right',
+    frogStart: { x: 0, y: 3 },
+    frogDirection: 'right',
     goal: { x: 3, y: 3 },
     obstacles: [],
     path: [{ x: 0, y: 3 }, { x: 1, y: 3 }, { x: 2, y: 3 }, { x: 3, y: 3 }],
-    maxCommands: 5,
-    hint: 'Move forward 3 times to reach the star!',
+    maxCommands: 6,
+    hint: 'Hop forward three times to reach the golden lily!',
   },
   {
     id: 2,
-    name: 'Going Up',
+    name: 'Upstream',
     gridSize: 4,
-    robotStart: { x: 0, y: 3 },
-    robotDirection: 'up',
+    frogStart: { x: 0, y: 3 },
+    frogDirection: 'up',
     goal: { x: 0, y: 0 },
     obstacles: [],
     path: [{ x: 0, y: 3 }, { x: 0, y: 2 }, { x: 0, y: 1 }, { x: 0, y: 0 }],
-    maxCommands: 5,
-    hint: 'The robot faces up - move forward!',
+    maxCommands: 6,
+    hint: 'You face upstream — hop forward toward the lily.',
   },
   {
     id: 3,
-    name: 'Turn Around',
+    name: 'Soggy Corner',
     gridSize: 4,
-    robotStart: { x: 0, y: 3 },
-    robotDirection: 'right',
-    goal: { x: 2, y: 1 },
+    frogStart: { x: 3, y: 3 },
+    frogDirection: 'up',
+    goal: { x: 0, y: 0 },
     obstacles: [],
-    path: [{ x: 0, y: 3 }, { x: 1, y: 3 }, { x: 2, y: 3 }, { x: 2, y: 2 }, { x: 2, y: 1 }],
-    maxCommands: 6,
-    hint: 'Go right, then turn left and go up!',
+    path: [
+      { x: 3, y: 3 },
+      { x: 3, y: 2 },
+      { x: 3, y: 1 },
+      { x: 3, y: 0 },
+      { x: 2, y: 0 },
+      { x: 1, y: 0 },
+      { x: 0, y: 0 },
+    ],
+    maxCommands: 9,
+    hint: 'Hop up the right side, then turn left and cross the top row to the lily.',
   },
   {
     id: 4,
-    name: 'L-Shape',
+    name: 'Pond Rim',
     gridSize: 5,
-    robotStart: { x: 0, y: 4 },
-    robotDirection: 'right',
+    frogStart: { x: 0, y: 4 },
+    frogDirection: 'right',
     goal: { x: 4, y: 0 },
     obstacles: [],
     path: [
       { x: 0, y: 4 }, { x: 1, y: 4 }, { x: 2, y: 4 }, { x: 3, y: 4 }, { x: 4, y: 4 },
-      { x: 4, y: 3 }, { x: 4, y: 2 }, { x: 4, y: 1 }, { x: 4, y: 0 }
+      { x: 4, y: 3 }, { x: 4, y: 2 }, { x: 4, y: 1 }, { x: 4, y: 0 },
     ],
-    maxCommands: 10,
-    hint: 'Go right to the edge, then turn and go up!',
+    maxCommands: 12,
+    hint: 'Follow the rim: hop right to the wall, turn, then hop up to the lily.',
   },
-  // Intermediate levels with obstacles
   {
     id: 5,
-    name: 'First Wall',
+    name: 'Rock in the Brook',
     gridSize: 5,
-    robotStart: { x: 0, y: 4 },
-    robotDirection: 'right',
+    frogStart: { x: 0, y: 4 },
+    frogDirection: 'right',
     goal: { x: 4, y: 0 },
     obstacles: [{ x: 2, y: 2 }],
     path: [
       { x: 0, y: 4 }, { x: 1, y: 4 }, { x: 2, y: 4 }, { x: 3, y: 4 }, { x: 4, y: 4 },
-      { x: 4, y: 3 }, { x: 4, y: 2 }, { x: 4, y: 1 }, { x: 4, y: 0 }
+      { x: 4, y: 3 }, { x: 4, y: 2 }, { x: 4, y: 1 }, { x: 4, y: 0 },
     ],
-    maxCommands: 10,
-    hint: 'Avoid the wall by going around the edge!',
+    maxCommands: 12,
+    hint: 'Rocks sit in the middle — stay on the outer rim of the pond.',
   },
   {
     id: 6,
-    name: 'Wall Maze',
+    name: 'Round the Reed',
     gridSize: 5,
-    robotStart: { x: 0, y: 2 },
-    robotDirection: 'right',
+    frogStart: { x: 0, y: 2 },
+    frogDirection: 'right',
     goal: { x: 4, y: 2 },
     obstacles: [{ x: 2, y: 1 }, { x: 2, y: 2 }, { x: 2, y: 3 }],
     path: [
       { x: 0, y: 2 }, { x: 1, y: 2 }, { x: 1, y: 4 }, { x: 2, y: 4 }, { x: 3, y: 4 },
-      { x: 3, y: 3 }, { x: 3, y: 2 }, { x: 4, y: 2 }
+      { x: 3, y: 3 }, { x: 3, y: 2 }, { x: 4, y: 2 },
     ],
-    maxCommands: 12,
-    hint: 'Go around the wall from below!',
+    maxCommands: 14,
+    hint: 'The reed blocks the middle — detour along the bottom edge.',
   },
   {
     id: 7,
-    name: 'Zigzag',
+    name: 'Dragonfly Row',
     gridSize: 5,
-    robotStart: { x: 0, y: 4 },
-    robotDirection: 'up',
+    frogStart: { x: 0, y: 4 },
+    frogDirection: 'up',
     goal: { x: 4, y: 0 },
-    obstacles: [{ x: 1, y: 2 }, { x: 2, y: 2 }, { x: 3, y: 2 }],
+    obstacles: [{ x: 2, y: 2 }, { x: 3, y: 2 }, { x: 4, y: 2 }],
     path: [
       { x: 0, y: 4 }, { x: 0, y: 3 }, { x: 0, y: 2 }, { x: 0, y: 1 }, { x: 0, y: 0 },
-      { x: 1, y: 0 }, { x: 2, y: 0 }, { x: 3, y: 0 }, { x: 4, y: 0 }
+      { x: 1, y: 0 }, { x: 2, y: 0 }, { x: 3, y: 0 }, { x: 4, y: 0 },
     ],
-    maxCommands: 10,
-    hint: 'Go up to the top, then turn right!',
+    maxCommands: 12,
+    hint: 'Hop up the shallow side — rocks block the middle row, so use the top bank.',
   },
-  // Advanced levels
   {
     id: 8,
-    name: 'Snake Path',
+    name: 'Crooked Creek',
     gridSize: 6,
-    robotStart: { x: 0, y: 5 },
-    robotDirection: 'right',
+    frogStart: { x: 0, y: 5 },
+    frogDirection: 'right',
     goal: { x: 5, y: 0 },
     obstacles: [{ x: 2, y: 3 }, { x: 3, y: 3 }, { x: 3, y: 2 }, { x: 3, y: 4 }],
     path: [
       { x: 0, y: 5 }, { x: 1, y: 5 }, { x: 2, y: 5 }, { x: 2, y: 4 },
       { x: 1, y: 4 }, { x: 1, y: 3 }, { x: 1, y: 2 }, { x: 1, y: 1 },
-      { x: 2, y: 1 }, { x: 3, y: 1 }, { x: 4, y: 1 }, { x: 5, y: 1 }, { x: 5, y: 0 }
+      { x: 2, y: 1 }, { x: 3, y: 1 }, { x: 4, y: 1 }, { x: 5, y: 1 }, { x: 5, y: 0 },
     ],
-    maxCommands: 16,
-    hint: 'Follow the winding path carefully!',
+    maxCommands: 18,
+    hint: 'Wind along the creek — one square wide in places.',
   },
   {
     id: 9,
-    name: 'Double Wall',
+    name: 'Twin Boulders',
     gridSize: 6,
-    robotStart: { x: 0, y: 3 },
-    robotDirection: 'right',
+    frogStart: { x: 0, y: 3 },
+    frogDirection: 'right',
     goal: { x: 5, y: 3 },
     obstacles: [{ x: 2, y: 2 }, { x: 2, y: 3 }, { x: 2, y: 4 }, { x: 4, y: 1 }, { x: 4, y: 2 }, { x: 4, y: 3 }],
     path: [
       { x: 0, y: 3 }, { x: 1, y: 3 }, { x: 1, y: 5 }, { x: 2, y: 5 }, { x: 3, y: 5 },
       { x: 3, y: 4 }, { x: 3, y: 3 }, { x: 3, y: 2 }, { x: 3, y: 1 }, { x: 3, y: 0 },
-      { x: 4, y: 0 }, { x: 5, y: 0 }, { x: 5, y: 1 }, { x: 5, y: 2 }, { x: 5, y: 3 }
+      { x: 4, y: 0 }, { x: 5, y: 0 }, { x: 5, y: 1 }, { x: 5, y: 2 }, { x: 5, y: 3 },
     ],
-    maxCommands: 18,
-    hint: 'Navigate through the maze carefully!',
+    maxCommands: 20,
+    hint: 'Slip between the two boulder columns using the bottom channel.',
   },
   {
     id: 10,
-    name: 'Complex Maze',
+    name: 'Misty Bank',
     gridSize: 6,
-    robotStart: { x: 0, y: 5 },
-    robotDirection: 'up',
+    frogStart: { x: 0, y: 5 },
+    frogDirection: 'up',
     goal: { x: 5, y: 0 },
     obstacles: [
       { x: 1, y: 4 }, { x: 1, y: 3 },
@@ -186,18 +191,18 @@ const levels: Level[] = [
     ],
     path: [
       { x: 0, y: 5 }, { x: 0, y: 4 }, { x: 0, y: 3 }, { x: 0, y: 2 }, { x: 0, y: 1 }, { x: 0, y: 0 },
-      { x: 1, y: 0 }, { x: 2, y: 0 }, { x: 3, y: 0 }, { x: 4, y: 0 }, { x: 5, y: 0 }
+      { x: 1, y: 0 }, { x: 2, y: 0 }, { x: 3, y: 0 }, { x: 4, y: 0 }, { x: 5, y: 0 },
     ],
-    maxCommands: 14,
-    hint: 'Go up along the left edge first!',
+    maxCommands: 18,
+    hint: 'The left bank is clear — hop straight up, then along the top to the lily.',
   },
   {
     id: 11,
-    name: 'Spiral',
+    name: 'Spiral Shell',
     gridSize: 7,
-    robotStart: { x: 0, y: 6 },
-    robotDirection: 'right',
-    goal: { x: 3, y: 3 },
+    frogStart: { x: 0, y: 6 },
+    frogDirection: 'right',
+    goal: { x: 2, y: 3 },
     obstacles: [
       { x: 1, y: 1 }, { x: 2, y: 1 }, { x: 3, y: 1 }, { x: 4, y: 1 }, { x: 5, y: 1 },
       { x: 5, y: 2 }, { x: 5, y: 3 }, { x: 5, y: 4 }, { x: 5, y: 5 },
@@ -210,17 +215,17 @@ const levels: Level[] = [
       { x: 6, y: 5 }, { x: 6, y: 4 }, { x: 6, y: 3 }, { x: 6, y: 2 }, { x: 6, y: 1 }, { x: 6, y: 0 },
       { x: 5, y: 0 }, { x: 4, y: 0 }, { x: 3, y: 0 }, { x: 2, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 0 },
       { x: 0, y: 1 }, { x: 0, y: 2 }, { x: 0, y: 3 }, { x: 0, y: 4 },
-      { x: 0, y: 4 }, { x: 2, y: 4 }, { x: 2, y: 3 },
+      { x: 2, y: 4 }, { x: 2, y: 3 },
     ],
-    maxCommands: 25,
-    hint: 'This is a spiral - go around the edges!',
+    maxCommands: 28,
+    hint: 'Spiral the outer edge inward. The golden lily is in the inner pocket — not on a rock!',
   },
   {
     id: 12,
-    name: 'Master Challenge',
+    name: 'Deep Channel',
     gridSize: 7,
-    robotStart: { x: 0, y: 6 },
-    robotDirection: 'right',
+    frogStart: { x: 0, y: 6 },
+    frogDirection: 'right',
     goal: { x: 6, y: 0 },
     obstacles: [
       { x: 2, y: 4 }, { x: 2, y: 5 },
@@ -230,10 +235,66 @@ const levels: Level[] = [
     path: [
       { x: 0, y: 6 }, { x: 1, y: 6 }, { x: 2, y: 6 }, { x: 3, y: 6 }, { x: 4, y: 6 },
       { x: 4, y: 5 }, { x: 4, y: 4 }, { x: 4, y: 3 }, { x: 4, y: 2 }, { x: 4, y: 1 }, { x: 4, y: 0 },
-      { x: 5, y: 0 }, { x: 6, y: 0 }
+      { x: 5, y: 0 }, { x: 6, y: 0 },
     ],
-    maxCommands: 16,
-    hint: 'Find the path through the obstacles!',
+    maxCommands: 26,
+    hint: 'Open water runs up column 4. Double hop onto the lily counts — you win the moment you land on it.',
+  },
+  {
+    id: 13,
+    name: 'Reed Cluster',
+    gridSize: 7,
+    frogStart: { x: 0, y: 6 },
+    frogDirection: 'right',
+    goal: { x: 6, y: 0 },
+    obstacles: [
+      { x: 2, y: 4 }, { x: 3, y: 4 }, { x: 4, y: 4 }, { x: 5, y: 4 },
+      { x: 3, y: 3 }, { x: 4, y: 3 },
+    ],
+    path: [
+      { x: 0, y: 6 }, { x: 0, y: 5 }, { x: 0, y: 4 }, { x: 0, y: 3 }, { x: 0, y: 2 }, { x: 0, y: 1 }, { x: 0, y: 0 },
+      { x: 1, y: 0 }, { x: 2, y: 0 }, { x: 3, y: 0 }, { x: 4, y: 0 }, { x: 5, y: 0 }, { x: 6, y: 0 },
+    ],
+    maxCommands: 26,
+    hint: 'Thick reeds block the middle — take the shallow left edge, then hop along the top.',
+  },
+  {
+    id: 14,
+    name: 'Crosswater',
+    gridSize: 7,
+    frogStart: { x: 0, y: 3 },
+    frogDirection: 'right',
+    goal: { x: 6, y: 3 },
+    obstacles: [
+      { x: 2, y: 3 }, { x: 3, y: 3 }, { x: 4, y: 3 },
+      { x: 2, y: 4 }, { x: 4, y: 4 },
+      { x: 3, y: 1 },
+    ],
+    path: [
+      { x: 0, y: 3 }, { x: 0, y: 2 }, { x: 1, y: 2 }, { x: 2, y: 2 }, { x: 3, y: 2 }, { x: 4, y: 2 }, { x: 5, y: 2 },
+      { x: 5, y: 3 }, { x: 6, y: 3 },
+    ],
+    maxCommands: 22,
+    hint: 'The straight line is blocked — dip north one row, cross under the gap, then drop to the lily.',
+  },
+  {
+    id: 15,
+    name: "King's Lily",
+    gridSize: 8,
+    frogStart: { x: 0, y: 7 },
+    frogDirection: 'right',
+    goal: { x: 7, y: 0 },
+    obstacles: [
+      { x: 3, y: 4 }, { x: 3, y: 5 }, { x: 4, y: 5 }, { x: 5, y: 5 },
+      { x: 4, y: 3 }, { x: 5, y: 3 }, { x: 6, y: 3 },
+      { x: 2, y: 6 }, { x: 2, y: 5 }, { x: 5, y: 6 },
+    ],
+    path: [
+      { x: 0, y: 7 }, { x: 0, y: 6 }, { x: 0, y: 5 }, { x: 0, y: 4 }, { x: 0, y: 3 }, { x: 0, y: 2 }, { x: 0, y: 1 }, { x: 0, y: 0 },
+      { x: 1, y: 0 }, { x: 2, y: 0 }, { x: 3, y: 0 }, { x: 4, y: 0 }, { x: 5, y: 0 }, { x: 6, y: 0 }, { x: 7, y: 0 },
+    ],
+    maxCommands: 32,
+    hint: 'The great pond — hug the left bank to the top, then sprint the lily ridge. Plan double hops to save blocks.',
   },
 ];
 
@@ -261,14 +322,15 @@ function getRotation(direction: Direction): number {
   return rotations[direction];
 }
 
-export default function RobotGame() {
+export default function FrogNavigatorGame() {
   const router = useRouter();
   const { addStars, incrementGamesPlayed, recordAnswer } = useGameStore();
-  
+  const cmdIdRef = useRef(0);
+
   const [currentLevelIndex, setCurrentLevelIndex] = useState(0);
   const [commands, setCommands] = useState<CommandBlock[]>([]);
-  const [robotPos, setRobotPos] = useState<Position>({ x: 0, y: 0 });
-  const [robotDir, setRobotDir] = useState<Direction>('right');
+  const [frogPos, setFrogPos] = useState<Position>({ x: 0, y: 0 });
+  const [frogDir, setFrogDir] = useState<Direction>('right');
   const [isRunning, setIsRunning] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
@@ -284,8 +346,8 @@ export default function RobotGame() {
 
   const resetLevel = useCallback(() => {
     if (level) {
-      setRobotPos(level.robotStart);
-      setRobotDir(level.robotDirection);
+      setFrogPos(level.frogStart);
+      setFrogDir(level.frogDirection);
       setCommands([]);
       setIsRunning(false);
       setIsComplete(false);
@@ -299,9 +361,16 @@ export default function RobotGame() {
     resetLevel();
   }, [resetLevel, currentLevelIndex]);
 
+  useEffect(() => {
+    if (!hitObstacle) return;
+    const t = setTimeout(() => setHitObstacle(false), 3200);
+    return () => clearTimeout(t);
+  }, [hitObstacle]);
+
   const addCommand = (command: Command) => {
     if (commands.length < level.maxCommands && !isRunning) {
-      setCommands(prev => [...prev, { id: `${Date.now()}-${Math.random()}`, command }]);
+      cmdIdRef.current += 1;
+      setCommands((prev) => [...prev, { id: `c-${cmdIdRef.current}`, command }]);
     }
   };
 
@@ -322,8 +391,21 @@ export default function RobotGame() {
     
     setIsRunning(true);
     setHitObstacle(false);
-    let pos = { ...level.robotStart };
-    let dir = level.robotDirection;
+    let pos = { ...level.frogStart };
+    let dir = level.frogDirection;
+
+    const winAndStop = () => {
+      setIsComplete(true);
+      setShowConfetti(true);
+      const levelScore = Math.max(10, 30 - (commands.length - 3) * 3);
+      setScore((prev) => prev + levelScore);
+      addStars(2);
+      recordAnswer(true);
+      incrementGamesPlayed();
+      setTimeout(() => setShowConfetti(false), 3000);
+      setExecutingIndex(-1);
+      setIsRunning(false);
+    };
 
     for (let i = 0; i < commands.length; i++) {
       setExecutingIndex(i);
@@ -333,10 +415,10 @@ export default function RobotGame() {
 
       if (cmd === 'left') {
         dir = turnLeft(dir);
-        setRobotDir(dir);
+        setFrogDir(dir);
       } else if (cmd === 'right') {
         dir = turnRight(dir);
-        setRobotDir(dir);
+        setFrogDir(dir);
       } else if (cmd === 'forward' || cmd === 'forward2') {
         const delta = getDirectionDelta(dir);
         const steps = cmd === 'forward2' ? 2 : 1;
@@ -359,7 +441,13 @@ export default function RobotGame() {
           }
           
           pos = newPos;
-          setRobotPos({ ...pos });
+          setFrogPos({ ...pos });
+
+          // Win as soon as the lily is reached (stops forward2 from taking a second step past the goal).
+          if (pos.x === level.goal.x && pos.y === level.goal.y) {
+            winAndStop();
+            return;
+          }
           
           if (step < steps - 1) {
             await new Promise(resolve => setTimeout(resolve, 250));
@@ -368,15 +456,8 @@ export default function RobotGame() {
       }
 
       if (pos.x === level.goal.x && pos.y === level.goal.y) {
-        setIsComplete(true);
-        setShowConfetti(true);
-        const levelScore = Math.max(10, 30 - (commands.length - 3) * 3);
-        setScore(prev => prev + levelScore);
-        addStars(2);
-        recordAnswer(true);
-        incrementGamesPlayed();
-        setTimeout(() => setShowConfetti(false), 3000);
-        break;
+        winAndStop();
+        return;
       }
     }
 
@@ -398,10 +479,11 @@ export default function RobotGame() {
 
   if (!level) return null;
 
-  const cellSize = level.gridSize <= 5 ? 60 : level.gridSize <= 6 ? 50 : 45;
+  const cellSize =
+    level.gridSize <= 5 ? 60 : level.gridSize <= 6 ? 50 : level.gridSize <= 7 ? 45 : 38;
 
   return (
-    <main className="min-h-screen min-h-[100dvh] p-3 sm:p-4 md:p-6 relative overflow-hidden">
+    <main className="min-h-screen min-h-[100dvh] p-3 sm:p-4 md:p-6 relative overflow-hidden bg-gradient-to-b from-emerald-950/90 via-teal-950/50 to-slate-950">
       <FloatingShapes />
       <Confetti show={showConfetti} />
 
@@ -439,8 +521,8 @@ export default function RobotGame() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
         >
-          <h1 className="text-2xl md:text-3xl font-bold text-white mb-1">🤖 {level.name}</h1>
-          <p className="text-gray-400 text-sm">Help the robot reach the star!</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-white mb-1">🐸 {level.name}</h1>
+          <p className="text-gray-400 text-sm">Help the frog hop to the golden lily!</p>
         </motion.div>
 
         <div className="flex flex-col lg:flex-row gap-4 items-start justify-center">
@@ -481,20 +563,20 @@ export default function RobotGame() {
           >
             <div className="flex justify-center gap-4 mb-3 flex-wrap text-xs">
               <div className="flex items-center gap-1.5">
-                <div className="w-4 h-4 rounded bg-green-500/30 border border-green-400/50" />
-                <span className="text-gray-300">Path</span>
+                <div className="w-4 h-4 rounded bg-teal-500/30 border border-teal-400/50" />
+                <span className="text-gray-300">Shallow water</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <div className="w-4 h-4 rounded bg-blue-500/30 border border-blue-400/50" />
-                <span className="text-gray-300">Start</span>
+                <div className="w-4 h-4 rounded bg-cyan-500/30 border border-cyan-400/50" />
+                <span className="text-gray-300">Start pad</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <div className="w-4 h-4 rounded bg-yellow-500/30 border border-yellow-400/50" />
-                <span className="text-gray-300">Goal</span>
+                <div className="w-4 h-4 rounded bg-amber-500/30 border border-amber-400/50" />
+                <span className="text-gray-300">Golden lily</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <div className="w-4 h-4 rounded bg-red-900/50 border border-red-500/50" />
-                <span className="text-gray-300">Wall</span>
+                <div className="w-4 h-4 rounded bg-stone-800/70 border border-stone-500/50" />
+                <span className="text-gray-300">Rock</span>
               </div>
             </div>
             <div 
@@ -509,53 +591,56 @@ export default function RobotGame() {
                 const y = Math.floor(idx / level.gridSize);
                 const isGoal = x === level.goal.x && y === level.goal.y;
                 const isObstacle = level.obstacles.some(o => o.x === x && o.y === y);
-                const isRobot = x === robotPos.x && y === robotPos.y;
+                const isFrog = x === frogPos.x && y === frogPos.y;
                 const isPath = level.path.some(p => p.x === x && p.y === y);
-                const isStart = x === level.robotStart.x && y === level.robotStart.y;
+                const isStart = x === level.frogStart.x && y === level.frogStart.y;
 
                 return (
                   <motion.div
                     key={idx}
                     className={`rounded-lg flex items-center justify-center relative ${
-                      isObstacle 
-                        ? 'bg-red-900/50 border-2 border-red-500/50' 
+                      isObstacle
+                        ? 'bg-stone-900/60 border-2 border-stone-500/45'
                         : isGoal
-                          ? 'bg-yellow-500/30 border-2 border-yellow-400/60'
-                          : isStart && !isRobot
-                            ? 'bg-blue-500/30 border-2 border-blue-400/50'
+                          ? 'bg-amber-500/25 border-2 border-amber-400/55'
+                          : isStart && !isFrog
+                            ? 'bg-cyan-500/25 border-2 border-cyan-400/45'
                             : isPath
-                              ? 'bg-green-500/25 border-2 border-green-400/40'
-                              : 'bg-white/5 border border-white/10'
+                              ? 'bg-teal-600/20 border-2 border-teal-400/35'
+                              : 'bg-emerald-950/40 border border-teal-500/15'
                     }`}
                     style={{ width: cellSize, height: cellSize }}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: idx * 0.005 }}
                   >
-                    {isPath && !isGoal && !isRobot && !isStart && (
+                    {isPath && !isGoal && !isFrog && !isStart && (
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="w-2 h-2 rounded-full bg-green-400/50" />
+                        <div className="w-2 h-2 rounded-full bg-teal-400/45" />
                       </div>
                     )}
-                    {isGoal && !isRobot && (
+                    {isGoal && (
                       <motion.span 
-                        className="text-xl md:text-2xl"
+                        className={`text-xl md:text-2xl ${isFrog ? 'opacity-35' : ''}`}
                         animate={{ scale: [1, 1.2, 1] }}
                         transition={{ duration: 2, repeat: Infinity }}
                       >
-                        ⭐
+                        🪷
                       </motion.span>
                     )}
                     {isObstacle && (
-                      <span className="text-xl">🧱</span>
+                      <span className="text-xl" title="Rock">
+                        🪨
+                      </span>
                     )}
-                    {isRobot && (
+                    {isFrog && (
                       <motion.div
-                        className="text-2xl md:text-3xl"
-                        animate={{ rotate: getRotation(robotDir) }}
+                        className="text-2xl md:text-3xl drop-shadow-md z-[1]"
+                        animate={{ rotate: getRotation(frogDir) }}
                         transition={{ duration: 0.3 }}
+                        title="Your frog"
                       >
-                        🤖
+                        🐸
                       </motion.div>
                     )}
                   </motion.div>
@@ -574,7 +659,7 @@ export default function RobotGame() {
             <div className="min-h-[180px] max-h-[280px] overflow-y-auto mb-3">
               {commands.length === 0 ? (
                 <div className="text-gray-500 text-center py-8 text-sm">
-                  Add commands to program the robot!
+                  Tap blocks to build a hop path for the frog!
                 </div>
               ) : (
                 <Reorder.Group 
@@ -664,7 +749,7 @@ export default function RobotGame() {
               exit={{ opacity: 0, y: -20 }}
               className="fixed bottom-20 left-1/2 -translate-x-1/2 glass px-6 py-3 rounded-xl border border-red-500/50"
             >
-              <p className="text-red-400 font-semibold">💥 Oops! Try again!</p>
+              <p className="text-red-400 font-semibold">💥 Splashed into a rock or the bank — try again!</p>
             </motion.div>
           )}
         </AnimatePresence>

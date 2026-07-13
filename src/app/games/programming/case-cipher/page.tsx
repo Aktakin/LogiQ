@@ -201,7 +201,7 @@ function pickWord(exclude?: string): string {
 
 function CipherChars({ text, showCaseColors }: { text: string; showCaseColors: boolean }) {
   return (
-    <span className="font-mono text-2xl sm:text-3xl md:text-4xl font-semibold tracking-[0.12em] sm:tracking-[0.18em] break-all transition-colors duration-700">
+    <span className="font-mono text-2xl sm:text-3xl md:text-4xl font-semibold tracking-[0.12em] sm:tracking-[0.18em] break-all transition-colors duration-700 select-none">
       {text.split('').map((ch, i) => {
         if (!showCaseColors) {
           // Hard mode (5+ successes this run): one green for all letters — no cyan vs emerald split.
@@ -532,7 +532,7 @@ export default function CaseCipherPage() {
           </div>
 
           <div
-            className="min-h-[3.5rem] sm:min-h-[4rem] flex items-center justify-center rounded-xl bg-black/35 border border-teal-500/25 px-3 py-4 mb-4"
+            className="min-h-[3.5rem] sm:min-h-[4rem] flex items-center justify-center rounded-xl bg-black/35 border border-teal-500/25 px-3 py-4 mb-4 select-none"
             aria-live="polite"
           >
             <CipherChars text={target} showCaseColors={caseColorHintsActive} />
@@ -550,6 +550,16 @@ export default function CaseCipherPage() {
             disabled={phase !== 'running'}
             value={typed}
             onChange={(e) => onInput(e.target.value)}
+            onPaste={(e) => e.preventDefault()}
+            onDrop={(e) => e.preventDefault()}
+            onKeyDown={(e) => {
+              if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'v') {
+                e.preventDefault();
+              }
+              if (e.shiftKey && e.key === 'Insert') {
+                e.preventDefault();
+              }
+            }}
             placeholder={phase === 'running' ? 'Type here…' : '—'}
             className="w-full max-w-sm mx-auto block rounded-xl border border-white/15 bg-white/5 px-4 py-3 font-mono text-lg text-center text-white placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-teal-500/45 disabled:opacity-45"
           />

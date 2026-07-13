@@ -1,372 +1,96 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useGameStore } from '@/store/gameStore';
 import FloatingShapes from '@/components/FloatingShapes';
 
-type TabType = 'code-quest' | 'logic-builders' | 'games' | 'programming';
-
-interface GameItem {
+interface Category {
   id: string;
   title: string;
   description: string;
   icon: string;
-  href: string;
   color: string;
-  tags?: string[];
-  isNew?: boolean;
-  comingSoon?: boolean;
+  bgGradient: string;
+  href: string;
+  gameCount: number;
+  features: string[];
 }
 
-const codeQuestGames: GameItem[] = [
+const categories: Category[] = [
   {
-    id: 'code-critter',
-    title: 'Code Critter',
-    description: 'Help the bunny collect carrots with simple arrows! Perfect for ages 6-9',
-    icon: '🐰',
-    href: '/games/programming/code-critter',
-    color: '#4ade80',
-    tags: ['Beginner', 'Sequences'],
-    isNew: true,
+    id: 'favourite',
+    title: 'Favourite',
+    description: 'Hand-picked games to jump into fast — variables, conditions, arrays, functions and more!',
+    icon: '⭐',
+    color: '#f43f5e',
+    bgGradient: 'from-rose-600/30 to-pink-600/20',
+    href: '/sections/favourite',
+    gameCount: 7,
+    features: ['Variables', 'Conditions', 'Arrays', 'Functions'],
   },
   {
-    id: 'mice-squash',
-    title: 'Mice Squash',
-    description: 'Left click to squash bugs, right click to collect coins! Fast reflexes win!',
-    icon: '🐜',
-    href: '/games/mice-squash',
-    color: '#f97316',
-    tags: ['Action', 'Mouse Skills'],
-    isNew: true,
-  },
-  {
-    id: 'key-speed',
-    title: 'Key Speed',
-    description: 'Type falling letters as fast as you can! Build combos for bonus points!',
-    icon: '⌨️',
-    href: '/games/key-speed',
+    id: 'code-quest',
+    title: 'Code Quest',
+    description: 'Learn programming through fun interactive games! Master sequences, loops, functions and more.',
+    icon: '💻',
     color: '#8b5cf6',
-    tags: ['Typing', 'Speed'],
-    isNew: true,
+    bgGradient: 'from-purple-600/30 to-violet-600/20',
+    href: '/sections/code-quest',
+    gameCount: 15,
+    features: ['Sequences', 'Functions', 'Loops', 'Variables'],
   },
   {
-    id: 'robot',
-    title: 'Frog Hop Quest',
-    description: 'Hop the pond with sequences — reach the golden lily in 15 levels',
-    icon: '🐸',
-    href: '/games/programming/robot',
-    color: '#10b981',
-    tags: ['Sequences', 'Commands'],
-  },
-  {
-    id: 'frog-hop-quest-2',
-    title: 'Frog Hop Quest 2',
-    description: 'Huge maze grids — find the unique shortest hop route past rocks',
-    icon: '🧭',
-    href: '/games/programming/frog-hop-quest-2',
-    color: '#059669',
-    tags: ['Mazes', 'Planning'],
-  },
-  {
-    id: 'functions',
-    title: 'Frog Function Pond',
-    description: 'Hop lily pads and bundle moves into reusable functions',
-    icon: '🐸',
-    href: '/games/programming/functions',
-    color: '#10b981',
-    tags: ['Functions', 'Abstraction'],
-  },
-  {
-    id: 'event-pond',
-    title: 'Bell Lily Pond',
-    description: 'Bell pads trigger bonus hops — same idea as events in real apps',
-    icon: '🔔',
-    href: '/games/programming/event-pond',
-    color: '#8b5cf6',
-    tags: ['Events', 'Handlers'],
-    isNew: true,
-  },
-  {
-    id: 'variables',
-    title: 'Variable Vault',
-    description: 'Learn how computers store and manipulate data',
-    icon: '📊',
-    href: '/games/programming/variables',
-    color: '#ec4899',
-    tags: ['Variables', 'Memory'],
-  },
-  {
-    id: 'case-cipher',
-    title: 'Case Cipher',
-    description: 'Timed typing — exact case; personal best in ms',
-    icon: '🔐',
-    href: '/games/programming/case-cipher',
-    color: '#2dd4bf',
-    tags: ['Speed', 'Case'],
-    isNew: true,
-  },
-  {
-    id: 'arrays',
-    title: 'Array Pond',
-    description: 'Help frogs reach lily pads using array methods!',
-    icon: '🐸',
-    href: '/games/programming/arrays',
-    color: '#14b8a6',
-    tags: ['Arrays', 'Methods'],
-    isNew: true,
-  },
-  {
-    id: 'loops',
-    title: 'Loop Blaster',
-    description: 'Blast aliens by writing for, while, and for…of loops!',
-    icon: '💥',
-    href: '/games/programming/loops',
-    color: '#8b5cf6',
-    tags: ['Loops', 'Shooting'],
-  },
-  {
-    id: 'pattern-stack',
-    title: 'Lilyfall',
-    description: 'Pond Tetris: touch matching symbols to pop them and shrink the pond; clear full rows',
-    icon: '🐸',
-    href: '/games/programming/pattern-stack',
-    color: '#34d399',
-    tags: ['Tetris', 'Frog', 'Matching'],
-    isNew: true,
-  },
-  {
-    id: 'conditions',
-    title: 'Under One Condition',
-    description: 'If, else, and choices — then block code with two routes',
-    icon: '🌓',
-    href: '/games/deduction',
-    color: '#f59e0b',
-    tags: ['Conditions', 'If/Else'],
-  },
-  {
-    id: 'logic-leap',
-    title: 'Logic Leap',
-    description: 'Jump through platforms by evaluating code conditions',
-    icon: '🐸',
-    href: '/games/programming/logic-leap',
-    color: '#06b6d4',
-    tags: ['Boolean', 'Operators'],
-    comingSoon: true,
-  },
-  {
-    id: 'debugging',
-    title: 'Bug Hunter',
-    description: 'Find and squash bugs in broken code!',
-    icon: '🐛',
-    href: '/games/programming/debugging',
-    color: '#ef4444',
-    tags: ['Debugging', 'Problem Solving'],
-    isNew: true,
-  },
-];
-
-const logicBuildersGames: GameItem[] = [
-  {
-    id: 'matrix-reasoning',
-    title: 'Matrix Mind',
-    description: 'Complete visual matrices to spot abstract rules and patterns.',
+    id: 'logic-builders',
+    title: 'Logic Builders',
+    description: 'Build your brain power with logic puzzles and reasoning challenges!',
     icon: '🧩',
-    href: '/games/logic-builders/matrix-reasoning',
-    color: '#8b5cf6',
-    tags: ['Matrix', 'Abstract'],
-    isNew: true,
+    color: '#a855f7',
+    bgGradient: 'from-fuchsia-600/30 to-purple-600/20',
+    href: '/sections/logic-builders',
+    gameCount: 10,
+    features: ['Patterns', 'Reasoning', 'Problem Solving', 'Deduction'],
   },
   {
-    id: 'analogy-lab',
-    title: 'Analogy Lab',
-    description: 'A is to B as C is to ? Map relationships and transform shapes.',
-    icon: '🔗',
-    href: '/games/logic-builders/analogy-lab',
+    id: 'games',
+    title: 'Fun Games',
+    description: 'Enjoy exciting arcade and puzzle games while learning valuable skills!',
+    icon: '🎮',
     color: '#06b6d4',
-    tags: ['Analogy', 'Mapping'],
-    isNew: true,
+    bgGradient: 'from-cyan-600/30 to-teal-600/20',
+    href: '/sections/games',
+    gameCount: 5,
+    features: ['Arcade', 'Puzzles', 'Memory', 'Action'],
   },
   {
-    id: 'transitive-trails',
-    title: 'Transitive Trails',
-    description: 'Use “A > B > C” clues to infer the hidden order.',
-    icon: '🧭',
-    href: '/games/logic-builders/transitive-trails',
-    color: '#10b981',
-    tags: ['Inference', 'Order'],
-    isNew: true,
-  },
-  {
-    id: 'rule-switch',
-    title: 'Rule Switch',
-    description: 'Sort cards by the rule — then adapt when the rule changes.',
-    icon: '🔀',
-    href: '/games/logic-builders/rule-switch',
-    color: '#f59e0b',
-    tags: ['Flexibility', 'Attention'],
-    isNew: true,
-  },
-  {
-    id: 'syllogism-snap',
-    title: 'Syllogism Snap',
-    description: 'Pick the conclusion that must be true from simple statements.',
-    icon: '✅',
-    href: '/games/logic-builders/syllogism-snap',
-    color: '#ec4899',
-    tags: ['Deduction', 'Reasoning'],
-    isNew: true,
-  },
-  {
-    id: 'truth-gates',
-    title: 'Truth Gates',
-    description: 'Feed shapes through AND, OR, NOT gates and predict the output!',
-    icon: '⚡',
-    href: '/games/logic-builders/truth-gates',
-    color: '#f59e0b',
-    tags: ['Boolean', 'Gates'],
-    isNew: true,
-  },
-  {
-    id: 'loop-lab',
-    title: 'Loop Lab',
-    description: 'How many shapes does the loop create? Count and predict!',
-    icon: '🔄',
-    href: '/games/logic-builders/loop-lab',
-    color: '#3b82f6',
-    tags: ['Loops', 'Counting'],
-    isNew: true,
-  },
-  {
-    id: 'output-oracle',
-    title: 'Output Oracle',
-    description: 'Read the code, pick the shapes it produces!',
-    icon: '🔮',
-    href: '/games/logic-builders/output-oracle',
-    color: '#8b5cf6',
-    tags: ['Code Reading', 'Prediction'],
-    isNew: true,
-  },
-  {
-    id: 'shape-sorter',
-    title: 'Shape Sorter',
-    description: 'Filter shapes with JS conditions — which ones pass?',
-    icon: '🗂️',
-    href: '/games/logic-builders/shape-sorter',
-    color: '#06b6d4',
-    tags: ['Filter', 'Arrays'],
-    isNew: true,
-  },
-  {
-    id: 'color-coder',
-    title: 'Color Coder',
-    description: 'Trace color variables through code — what color is the result?',
-    icon: '🎨',
-    href: '/games/logic-builders/color-coder',
-    color: '#ec4899',
-    tags: ['Variables', 'Tracing'],
-    isNew: true,
-  },
-];
-
-const funGames: GameItem[] = [
-  {
-    id: 'dino',
-    title: 'Space Dino Runner',
-    description: 'Jump over obstacles and survive as long as you can!',
-    icon: '🦖',
-    href: '/games/dino',
-    color: '#10b981',
-    tags: ['Endless Runner', 'Action'],
-    isNew: true,
-  },
-  {
-    id: 'maze',
-    title: 'Maze Runner',
-    description: 'Navigate through randomly generated mazes',
-    icon: '🌀',
-    href: '/games/maze',
-    color: '#06b6d4',
-    tags: ['Puzzle', 'Navigation'],
-  },
-  {
-    id: 'marble-shooter',
-    title: 'Marble Blaster',
-    description: 'Match 3+ colored marbles to clear the path!',
-    icon: '🐸',
-    href: '/games/marble-shooter',
-    color: '#8b5cf6',
-    tags: ['Puzzle', 'Shooter'],
-    isNew: true,
-  },
-  {
-    id: 'memory-match',
-    title: 'Memory Match',
-    description: 'Find matching pairs and test your memory!',
-    icon: '🧠',
-    href: '/games/memory-match',
-    color: '#ec4899',
-    tags: ['Memory', 'Puzzle'],
-    isNew: true,
-  },
-  {
-    id: 'catch-game',
-    title: 'Catch Game',
-    description: 'Catch falling squares — same ideas as variables, arrays & loops!',
+    id: 'game-dev',
+    title: 'Game Dev Studio',
+    description: 'Learn to create your own video games! Design characters, levels, and game mechanics.',
     icon: '🎯',
-    href: '/games/catch-game',
-    color: '#22d3ee',
-    tags: ['Arcade', 'Canvas'],
-    isNew: true,
-  },
-];
-
-const programmingProjects: GameItem[] = [
-  {
-    id: 'rock-paper-scissors',
-    title: '🪨 Rock Paper Scissors Showdown',
-    description: 'Beat the computer! Type the code and make your game — win with rock, paper, or scissors!',
-    icon: '✂️',
-    href: '/games/programming/projects/rock-paper-scissors',
-    color: '#8b5cf6',
-    tags: ['Fun', 'Win or lose', 'Code it yourself'],
-    isNew: true,
+    color: '#ef4444',
+    bgGradient: 'from-red-600/30 to-rose-600/20',
+    href: '/sections/game-dev',
+    gameCount: 1,
+    features: ['Sprites', 'Physics', 'Level Design', 'Game Logic'],
   },
   {
-    id: 'guess-the-number',
-    title: '🎲 Secret Number Challenge',
-    description: 'Can you crack the secret number? Type the code and play — guess 1 to 10 and see if you’re right!',
-    icon: '🎲',
-    href: '/games/programming/projects/guess-the-number',
-    color: '#06b6d4',
-    tags: ['Mystery', 'Guess', 'You can do it'],
-    isNew: true,
+    id: 'programming',
+    title: 'Coding Projects',
+    description: 'Build real mini-projects by typing actual code! Create games you can play.',
+    icon: '⌨️',
+    color: '#f59e0b',
+    bgGradient: 'from-amber-600/30 to-orange-600/20',
+    href: '/sections/programming',
+    gameCount: 5,
+    features: ['Real Code', 'Projects', 'Interactive', 'Build Games'],
   },
-  {
-    id: 'pick-a-card',
-    title: '🃏 Magic Card Deck',
-    description: 'Draw a card and see what you get! Type the code and watch your deck come to life.',
-    icon: '🃏',
-    href: '/games/programming/projects/pick-a-card',
-    color: '#10b981',
-    tags: ['Lucky', 'Surprise', 'Arrays'],
-    comingSoon: true,
-  },
-];
-
-const tabs = [
-  { id: 'code-quest' as TabType, label: 'Code Quest', icon: '💻', color: '#8b5cf6' },
-  { id: 'logic-builders' as TabType, label: 'Logic Builders', icon: '🧩', color: '#a855f7' },
-  { id: 'games' as TabType, label: 'Games', icon: '🎮', color: '#06b6d4' },
-  { id: 'programming' as TabType, label: 'Programming', icon: '⌨️', color: '#f59e0b' },
 ];
 
 export default function DashboardPage() {
   const router = useRouter();
   const { ageGroup, playerName, progress } = useGameStore();
-  const [activeTab, setActiveTab] = useState<TabType>('code-quest');
 
   useEffect(() => {
     if (!ageGroup) {
@@ -376,17 +100,8 @@ export default function DashboardPage() {
 
   if (!ageGroup) return null;
 
-
-  const getGamesForTab = (tab: TabType): GameItem[] => {
-    switch (tab) {
-      case 'code-quest': return codeQuestGames;
-      case 'logic-builders': return logicBuildersGames;
-      case 'games': return funGames;
-      case 'programming': return programmingProjects;
-    }
-  };
-
-  const currentGames = getGamesForTab(activeTab);
+  const totalGames = categories.reduce((sum, cat) => sum + cat.gameCount, 0);
+  const totalStars = progress.totalStars || 0;
 
   return (
     <main className="min-h-screen min-h-[100dvh] p-4 sm:p-6 md:p-8 relative">
@@ -396,12 +111,12 @@ export default function DashboardPage() {
       <motion.header
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative z-10 mb-4 sm:mb-8"
+        className="relative z-10 mb-6 sm:mb-10"
       >
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="min-w-0 flex-1">
             <motion.h1
-              className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-0.5 sm:mb-1 truncate"
+              className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-1"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.2 }}
@@ -409,183 +124,92 @@ export default function DashboardPage() {
               Hello, <span className="text-pink-400">{playerName || 'Explorer'}</span>! 🌟
             </motion.h1>
             <motion.p
-              className="text-gray-400 text-xs sm:text-sm"
+              className="text-gray-400 text-sm sm:text-base"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3 }}
             >
-              Ready for some brain-boosting fun?
+              Choose a category to start your adventure
             </motion.p>
           </div>
 
-          <motion.button
-            onClick={() => router.push('/')}
-            className="glass px-4 py-2.5 rounded-xl text-gray-300 hover:text-white transition-colors text-sm min-h-[44px] touch-target flex-shrink-0"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            ⚙️ Settings
-          </motion.button>
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Stats badges */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.4 }}
+              className="glass px-3 py-2 rounded-xl text-center"
+            >
+              <div className="text-yellow-400 text-lg sm:text-xl font-bold">⭐ {totalStars}</div>
+              <div className="text-gray-400 text-xs">Stars</div>
+            </motion.div>
+
+            <motion.button
+              onClick={() => router.push('/')}
+              className="glass px-3 sm:px-4 py-2.5 rounded-xl text-gray-300 hover:text-white transition-colors text-sm min-h-[44px] touch-target flex-shrink-0"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              ⚙️
+            </motion.button>
+          </div>
         </div>
       </motion.header>
 
-
-      {/* Tab Navigation */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4 }}
-        className="relative z-10 mb-4 sm:mb-8"
-      >
-        <div className="flex gap-1 sm:gap-2 p-1.5 glass rounded-2xl overflow-x-auto">
-          {tabs.map((tab) => (
-            <motion.button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 min-w-0 py-3 px-2 sm:px-4 rounded-xl font-semibold text-xs sm:text-sm md:text-base transition-all flex items-center justify-center gap-1.5 sm:gap-2 min-h-[48px] touch-target ${
-                activeTab === tab.id
-                  ? 'text-white shadow-lg'
-                  : 'text-gray-400 hover:text-white'
-              }`}
-              style={{
-                backgroundColor: activeTab === tab.id ? `${tab.color}40` : 'transparent',
-                border: activeTab === tab.id ? `2px solid ${tab.color}` : '2px solid transparent',
-              }}
-              whileHover={{ scale: activeTab === tab.id ? 1 : 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <span className="text-lg sm:text-xl flex-shrink-0">{tab.icon}</span>
-              <span className="hidden xs:inline sm:inline truncate">{tab.label}</span>
-            </motion.button>
-          ))}
-        </div>
-      </motion.div>
-
-      {/* Tab Content */}
+      {/* Category Grid */}
       <motion.section
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.5 }}
-        className="relative z-10"
+        transition={{ delay: 0.4 }}
+        className="relative z-10 mb-8"
       >
-        {/* Tab Header */}
-        <div className="flex items-center justify-between gap-2 mb-4 sm:mb-6">
-          <h2 className="text-lg sm:text-2xl font-bold text-white flex items-center gap-2 sm:gap-3 min-w-0">
-            <span className="flex-shrink-0">{tabs.find(t => t.id === activeTab)?.icon}</span>
-            <span className="truncate">{tabs.find(t => t.id === activeTab)?.label}</span>
-          </h2>
-          <span className="text-gray-500 text-xs sm:text-sm flex-shrink-0">
-            {currentGames.length} {currentGames.length === 1 ? 'game' : 'games'}
-          </span>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+          {categories.map((category, index) => (
+            <CategoryCard key={category.id} category={category} index={index} />
+          ))}
         </div>
-
-        {activeTab === 'logic-builders' && (
-          <div className="mb-4 sm:mb-6 glass rounded-2xl p-4 sm:p-5 border border-purple-500/30">
-            <div className="flex items-start gap-3">
-              <div className="text-2xl sm:text-3xl">🧠</div>
-              <div className="min-w-0">
-                <h3 className="text-white font-semibold text-sm sm:text-base mb-1">
-                  Research-backed logic assessments
-                </h3>
-                <p className="text-gray-400 text-xs sm:text-sm">
-                  These assessments are inspired by cognitive science tasks that build
-                  abstract reasoning, analogical mapping, transitive inference,
-                  cognitive flexibility, and syllogistic deduction.
-                </p>
-                <div className="flex flex-wrap gap-2 mt-3">
-                  {['Matrix reasoning', 'Analogies', 'Transitive inference', 'Rule switching', 'Syllogisms'].map((tag) => (
-                    <span
-                      key={tag}
-                      className="px-2 py-0.5 rounded-full text-xs text-purple-200"
-                      style={{ backgroundColor: 'rgba(168, 85, 247, 0.2)' }}
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Games Grid */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-            className={`grid gap-3 sm:gap-4 ${
-              activeTab === 'code-quest' || activeTab === 'logic-builders'
-                ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
-                : 'grid-cols-1 sm:grid-cols-2'
-            }`}
-          >
-            {currentGames.map((game, index) => (
-              <GameCard
-                key={game.id}
-                game={game}
-                index={index}
-                level={progress.levelsByGame[game.id as keyof typeof progress.levelsByGame] || 1}
-              />
-            ))}
-          </motion.div>
-        </AnimatePresence>
-
-        {/* Empty State for Games tab */}
-        {activeTab === 'games' && currentGames.length === 1 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="mt-6 glass rounded-2xl p-6 text-center"
-          >
-            <span className="text-4xl mb-3 block">🎮</span>
-            <p className="text-gray-400">More games coming soon!</p>
-          </motion.div>
-        )}
       </motion.section>
 
-      {/* Quick Stats Footer */}
+      {/* Quick Stats */}
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.7 }}
-        className="mt-6 sm:mt-10 relative z-10"
+        transition={{ delay: 0.8 }}
+        className="relative z-10"
       >
-        <div 
-          className="rounded-2xl p-4 sm:p-6 relative overflow-hidden"
-          style={{
-            background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(6, 182, 212, 0.2))',
-            border: '1px solid rgba(139, 92, 246, 0.3)',
-          }}
-        >
-          <div className="relative flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
-            <div className="flex items-center gap-3 sm:gap-4 text-center sm:text-left">
+        <div className="glass rounded-2xl p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-4 text-center sm:text-left">
               <motion.div
                 animate={{ rotate: [0, 10, -10, 0] }}
                 transition={{ duration: 2, repeat: Infinity }}
                 className="text-4xl sm:text-5xl flex-shrink-0"
               >
-                🎁
+                🎯
               </motion.div>
-              <div className="min-w-0">
-                <h3 className="text-lg sm:text-xl font-bold text-white mb-0.5 sm:mb-1">
-                  Daily Challenge
+              <div>
+                <h3 className="text-lg sm:text-xl font-bold text-white mb-1">
+                  {totalGames} Games Available
                 </h3>
-                <p className="text-gray-300 text-xs sm:text-sm">
-                  Complete today&apos;s puzzle for bonus stars!
+                <p className="text-gray-400 text-sm">
+                  Explore all categories and collect stars!
                 </p>
               </div>
             </div>
 
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="btn-cosmic px-5 sm:px-6 py-2.5 text-sm min-h-[44px] touch-target w-full sm:w-auto"
-            >
-              <span>Play Now →</span>
-            </motion.button>
+            <div className="flex gap-3 sm:gap-4">
+              {categories.map((cat) => (
+                <motion.div
+                  key={cat.id}
+                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center text-xl sm:text-2xl"
+                  style={{ backgroundColor: `${cat.color}30` }}
+                  whileHover={{ scale: 1.1, rotate: 5 }}
+                >
+                  {cat.icon}
+                </motion.div>
+              ))}
+            </div>
           </div>
         </div>
       </motion.div>
@@ -593,130 +217,69 @@ export default function DashboardPage() {
   );
 }
 
-
-function GameCard({
-  game,
-  index,
-  level,
-}: {
-  game: GameItem;
-  index: number;
-  level: number;
-}) {
-  if (game.comingSoon) {
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: index * 0.05 }}
-        className="h-full p-5 rounded-2xl relative overflow-hidden opacity-65 cursor-not-allowed"
-        style={{
-          background: `linear-gradient(135deg, ${game.color}12, ${game.color}05)`,
-          border: `2px solid ${game.color}30`,
-        }}
-      >
-        <div
-          className="absolute top-3 right-3 px-2 py-0.5 rounded-full text-xs font-bold"
-          style={{ backgroundColor: `${game.color}30`, color: game.color }}
-        >
-          COMING SOON
-        </div>
-        <div
-          className="w-14 h-14 rounded-xl flex items-center justify-center text-3xl mb-3"
-          style={{
-            background: `linear-gradient(135deg, ${game.color}40, ${game.color}20)`,
-            boxShadow: `0 8px 20px ${game.color}30`,
-          }}
-        >
-          {game.icon}
-        </div>
-        <h3 className="text-base sm:text-lg font-bold text-white mb-1 line-clamp-2">{game.title}</h3>
-        <p className="text-gray-400 text-xs sm:text-sm mb-3 line-clamp-2">{game.description}</p>
-        {game.tags && (
-          <div className="flex flex-wrap gap-1 mb-3">
-            {game.tags.map((tag) => (
-              <span
-                key={tag}
-                className="px-2 py-0.5 rounded-full text-xs"
-                style={{ backgroundColor: `${game.color}20`, color: `${game.color}` }}
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-        )}
-        <div className="flex items-center justify-between">
-          <span className="text-xs text-gray-500">Level {level}</span>
-          <span className="text-sm font-semibold text-gray-400">Soon</span>
-        </div>
-      </motion.div>
-    );
-  }
-
+function CategoryCard({ category, index }: { category: Category; index: number }) {
   return (
-    <Link href={game.href}>
+    <Link href={category.href}>
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: index * 0.05 }}
-        className="h-full p-5 rounded-2xl cursor-pointer group relative overflow-hidden"
-        style={{
-          background: `linear-gradient(135deg, ${game.color}15, ${game.color}05)`,
-          border: `2px solid ${game.color}30`,
-        }}
+        transition={{ delay: 0.2 + index * 0.1 }}
+        className={`relative p-5 sm:p-6 rounded-2xl cursor-pointer group overflow-hidden bg-gradient-to-br ${category.bgGradient}`}
+        style={{ border: `2px solid ${category.color}40` }}
         whileHover={{ scale: 1.02, y: -4 }}
         whileTap={{ scale: 0.98 }}
       >
-        {/* New Badge */}
-        {game.isNew && (
-          <motion.div
-            className="absolute top-3 right-3 px-2 py-0.5 rounded-full text-xs font-bold"
-            style={{ backgroundColor: `${game.color}30`, color: game.color }}
-            animate={{ scale: [1, 1.1, 1] }}
-            transition={{ duration: 2, repeat: Infinity }}
-          >
-            NEW
-          </motion.div>
-        )}
+        {/* Game count badge */}
+        <div
+          className="absolute top-4 right-4 px-3 py-1 rounded-full text-sm font-bold"
+          style={{ backgroundColor: `${category.color}30`, color: category.color }}
+        >
+          {category.gameCount} games
+        </div>
 
         {/* Icon */}
         <motion.div
-          className="w-14 h-14 rounded-xl flex items-center justify-center text-3xl mb-3"
+          className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl flex items-center justify-center text-4xl sm:text-5xl mb-4"
           style={{
-            background: `linear-gradient(135deg, ${game.color}40, ${game.color}20)`,
-            boxShadow: `0 8px 20px ${game.color}30`,
+            background: `linear-gradient(135deg, ${category.color}50, ${category.color}20)`,
+            boxShadow: `0 8px 32px ${category.color}40`,
           }}
           whileHover={{ scale: 1.1, rotate: 5 }}
         >
-          {game.icon}
+          {category.icon}
         </motion.div>
 
         {/* Title */}
-        <h3 className="text-base sm:text-lg font-bold text-white mb-1 line-clamp-2">{game.title}</h3>
+        <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">{category.title}</h2>
 
         {/* Description */}
-        <p className="text-gray-400 text-xs sm:text-sm mb-3 line-clamp-2">{game.description}</p>
+        <p className="text-gray-300 text-sm sm:text-base mb-4 line-clamp-2">
+          {category.description}
+        </p>
 
-        {/* Tags */}
-        {game.tags && (
-          <div className="flex flex-wrap gap-1 mb-3">
-            {game.tags.map((tag) => (
-              <span
-                key={tag}
-                className="px-2 py-0.5 rounded-full text-xs"
-                style={{ backgroundColor: `${game.color}20`, color: `${game.color}` }}
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-        )}
+        {/* Feature tags */}
+        <div className="flex flex-wrap gap-2 mb-4">
+          {category.features.map((feature) => (
+            <span
+              key={feature}
+              className="px-2 py-1 rounded-full text-xs font-medium"
+              style={{ backgroundColor: `${category.color}25`, color: category.color }}
+            >
+              {feature}
+            </span>
+          ))}
+        </div>
 
-        {/* Level & Play */}
+        {/* Explore button */}
         <div className="flex items-center justify-between">
-          <span className="text-xs text-gray-500">Level {level}</span>
-          <span className="text-sm font-semibold" style={{ color: game.color }}>
-            Play →
+          <span className="text-white font-semibold flex items-center gap-2 group-hover:gap-3 transition-all">
+            Explore
+            <motion.span
+              animate={{ x: [0, 4, 0] }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+            >
+              →
+            </motion.span>
           </span>
         </div>
 
@@ -724,7 +287,7 @@ function GameCard({
         <div
           className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
           style={{
-            background: `radial-gradient(circle at center, ${game.color}10, transparent 70%)`,
+            background: `radial-gradient(circle at center, ${category.color}15, transparent 70%)`,
           }}
         />
       </motion.div>
