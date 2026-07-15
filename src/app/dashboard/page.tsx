@@ -6,12 +6,18 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useGameStore } from '@/store/gameStore';
 import FloatingShapes from '@/components/FloatingShapes';
+import {
+  CategoryLineIcon,
+  LineGridIcon,
+  LineSettingsIcon,
+  LineStarIcon,
+  type CategoryIconId,
+} from '@/components/CategoryLineIcon';
 
 interface Category {
-  id: string;
+  id: CategoryIconId;
   title: string;
   description: string;
-  icon: string;
   color: string;
   bgGradient: string;
   href: string;
@@ -24,29 +30,26 @@ const categories: Category[] = [
     id: 'favourite',
     title: 'Favourite',
     description: 'Hand-picked games to jump into fast — variables, conditions, arrays, functions and more!',
-    icon: '⭐',
     color: '#f43f5e',
     bgGradient: 'from-rose-600/30 to-pink-600/20',
     href: '/sections/favourite',
-    gameCount: 7,
+    gameCount: 8,
     features: ['Variables', 'Conditions', 'Arrays', 'Functions'],
   },
   {
     id: 'code-quest',
     title: 'Code Quest',
     description: 'Learn programming through fun interactive games! Master sequences, loops, functions and more.',
-    icon: '💻',
     color: '#8b5cf6',
     bgGradient: 'from-purple-600/30 to-violet-600/20',
     href: '/sections/code-quest',
-    gameCount: 15,
+    gameCount: 16,
     features: ['Sequences', 'Functions', 'Loops', 'Variables'],
   },
   {
     id: 'logic-builders',
     title: 'Logic Builders',
     description: 'Build your brain power with logic puzzles and reasoning challenges!',
-    icon: '🧩',
     color: '#a855f7',
     bgGradient: 'from-fuchsia-600/30 to-purple-600/20',
     href: '/sections/logic-builders',
@@ -57,7 +60,6 @@ const categories: Category[] = [
     id: 'games',
     title: 'Fun Games',
     description: 'Enjoy exciting arcade and puzzle games while learning valuable skills!',
-    icon: '🎮',
     color: '#06b6d4',
     bgGradient: 'from-cyan-600/30 to-teal-600/20',
     href: '/sections/games',
@@ -68,7 +70,6 @@ const categories: Category[] = [
     id: 'game-dev',
     title: 'Game Dev Studio',
     description: 'Learn to create your own video games! Design characters, levels, and game mechanics.',
-    icon: '🎯',
     color: '#ef4444',
     bgGradient: 'from-red-600/30 to-rose-600/20',
     href: '/sections/game-dev',
@@ -79,7 +80,6 @@ const categories: Category[] = [
     id: 'programming',
     title: 'Coding Projects',
     description: 'Build real mini-projects by typing actual code! Create games you can play.',
-    icon: '⌨️',
     color: '#f59e0b',
     bgGradient: 'from-amber-600/30 to-orange-600/20',
     href: '/sections/programming',
@@ -121,7 +121,7 @@ export default function DashboardPage() {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.2 }}
             >
-              Hello, <span className="text-pink-400">{playerName || 'Explorer'}</span>! 🌟
+              Hello, <span className="text-pink-400">{playerName || 'Explorer'}</span>!
             </motion.h1>
             <motion.p
               className="text-gray-400 text-sm sm:text-base"
@@ -141,17 +141,22 @@ export default function DashboardPage() {
               transition={{ delay: 0.4 }}
               className="glass px-3 py-2 rounded-xl text-center"
             >
-              <div className="text-yellow-400 text-lg sm:text-xl font-bold">⭐ {totalStars}</div>
+              <div className="flex items-center justify-center gap-1.5 text-yellow-400 text-lg sm:text-xl font-bold">
+                <LineStarIcon size={18} />
+                {totalStars}
+              </div>
               <div className="text-gray-400 text-xs">Stars</div>
             </motion.div>
 
             <motion.button
               onClick={() => router.push('/')}
-              className="glass px-3 sm:px-4 py-2.5 rounded-xl text-gray-300 hover:text-white transition-colors text-sm min-h-[44px] touch-target flex-shrink-0"
+              className="glass px-3 sm:px-4 py-2.5 rounded-xl text-gray-300 hover:text-white transition-colors text-sm min-h-[44px] touch-target flex-shrink-0 flex items-center justify-center"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
+              title="Settings"
+              aria-label="Settings"
             >
-              ⚙️
+              <LineSettingsIcon />
             </motion.button>
           </div>
         </div>
@@ -181,13 +186,9 @@ export default function DashboardPage() {
         <div className="glass rounded-2xl p-4 sm:p-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-4 text-center sm:text-left">
-              <motion.div
-                animate={{ rotate: [0, 10, -10, 0] }}
-                transition={{ duration: 2, repeat: Infinity }}
-                className="text-4xl sm:text-5xl flex-shrink-0"
-              >
-                🎯
-              </motion.div>
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center flex-shrink-0 bg-white/5 border border-white/10">
+                <LineGridIcon size={28} className="text-white/90" />
+              </div>
               <div>
                 <h3 className="text-lg sm:text-xl font-bold text-white mb-1">
                   {totalGames} Games Available
@@ -202,11 +203,10 @@ export default function DashboardPage() {
               {categories.map((cat) => (
                 <motion.div
                   key={cat.id}
-                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center text-xl sm:text-2xl"
-                  style={{ backgroundColor: `${cat.color}30` }}
-                  whileHover={{ scale: 1.1, rotate: 5 }}
+                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center bg-white/5 border border-white/10"
+                  whileHover={{ scale: 1.05 }}
                 >
-                  {cat.icon}
+                  <CategoryLineIcon id={cat.id} size={22} />
                 </motion.div>
               ))}
             </div>
@@ -239,14 +239,13 @@ function CategoryCard({ category, index }: { category: Category; index: number }
 
         {/* Icon */}
         <motion.div
-          className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl flex items-center justify-center text-4xl sm:text-5xl mb-4"
+          className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl flex items-center justify-center mb-4 bg-white/5 border border-white/15"
           style={{
-            background: `linear-gradient(135deg, ${category.color}50, ${category.color}20)`,
-            boxShadow: `0 8px 32px ${category.color}40`,
+            boxShadow: `0 8px 24px ${category.color}25`,
           }}
-          whileHover={{ scale: 1.1, rotate: 5 }}
+          whileHover={{ scale: 1.05 }}
         >
-          {category.icon}
+          <CategoryLineIcon id={category.id} size={36} className="text-white" />
         </motion.div>
 
         {/* Title */}

@@ -77,6 +77,16 @@ const codeQuestGames: GameItem[] = [
     tags: ['Functions', 'Abstraction'],
   },
   {
+    id: 'functions-2',
+    title: 'Frog Function Pond 2',
+    description: 'Harder kernels — nest functions inside functions under tight script caps',
+    icon: '🧬',
+    href: '/games/programming/functions-2',
+    color: '#6366f1',
+    tags: ['Nesting', 'Composition'],
+    isNew: true,
+  },
+  {
     id: 'event-pond',
     title: 'Bell Lily Pond',
     description: 'Bell pads trigger bonus hops — same idea as events in real apps',
