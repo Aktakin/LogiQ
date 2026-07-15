@@ -19,6 +19,25 @@ interface GameItem {
 
 const favouriteGames: GameItem[] = [
   {
+    id: 'functions-3',
+    title: 'Frog Function Pond 3',
+    description: 'No free Hop×N — build & nest your own kernels (main = functions only)',
+    icon: '🐸',
+    href: '/games/programming/functions-3',
+    color: '#c026d3',
+    tags: ['Hard', '3 Kernels', 'Nesting'],
+    isNew: true,
+  },
+  {
+    id: 'robot',
+    title: 'Frog Hop Quest',
+    description: 'Hop the pond with sequences — reach the golden lily in 15 levels',
+    icon: '🐸',
+    href: '/games/programming/robot',
+    color: '#10b981',
+    tags: ['Sequences', 'Commands'],
+  },
+  {
     id: 'functions-2',
     title: 'Frog Function Pond 2',
     description: 'Harder kernels — nest functions inside functions under tight script caps',
@@ -138,7 +157,7 @@ export default function FavouriteSection() {
         </div>
         <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">Favourite</h1>
         <p className="text-gray-400 text-sm sm:text-base max-w-xl mx-auto">
-          Hand-picked games to jump into fast — including Frog Function Pond 2, conditions, arrays, and more!
+          Hand-picked games to jump into fast — Pond 3, Pond 2, conditions, arrays, and more!
         </p>
       </motion.div>
 

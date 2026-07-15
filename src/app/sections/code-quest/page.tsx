@@ -50,15 +50,6 @@ const codeQuestGames: GameItem[] = [
     isNew: true,
   },
   {
-    id: 'robot',
-    title: 'Frog Hop Quest',
-    description: 'Hop the pond with sequences — reach the golden lily in 15 levels',
-    icon: '🐸',
-    href: '/games/programming/robot',
-    color: '#10b981',
-    tags: ['Sequences', 'Commands'],
-  },
-  {
     id: 'frog-hop-quest-2',
     title: 'Frog Hop Quest 2',
     description: 'Huge maze grids — find the unique shortest hop route past rocks',

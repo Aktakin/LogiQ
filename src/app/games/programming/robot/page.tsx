@@ -473,7 +473,7 @@ export default function FrogNavigatorGame() {
     if (currentLevelIndex < levels.length - 1) {
       setCurrentLevelIndex(prev => prev + 1);
     } else {
-      router.push('/games/programming');
+      router.push('/sections/favourite');
     }
   };
 
@@ -494,12 +494,12 @@ export default function FrogNavigatorGame() {
       >
         <div className="flex items-center justify-between flex-wrap gap-2">
           <motion.button
-            onClick={() => router.push('/games/programming')}
+            onClick={() => router.push('/sections/favourite')}
             className="glass px-3 py-2.5 rounded-xl text-gray-300 hover:text-white transition-colors text-sm min-h-[44px] touch-target"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            ← Back
+            ← Favourites
           </motion.button>
 
           <div className="flex items-center gap-3">
