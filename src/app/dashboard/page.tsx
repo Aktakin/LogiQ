@@ -43,7 +43,7 @@ const categories: Category[] = [
     color: '#8b5cf6',
     bgGradient: 'from-purple-600/30 to-violet-600/20',
     href: '/sections/code-quest',
-    gameCount: 16,
+    gameCount: 15,
     features: ['Sequences', 'Functions', 'Loops', 'Variables'],
   },
   {

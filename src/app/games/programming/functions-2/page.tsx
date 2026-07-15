@@ -445,7 +445,7 @@ export default function FrogFunctionPond2() {
       <div className="max-w-6xl mx-auto relative z-10">
         <motion.div className="text-center mb-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           <p className="text-indigo-300 text-xs font-semibold tracking-wide uppercase mb-1">
-            🧬 Frog Function Pond 2
+            🐸 Frog Function Pond 2
           </p>
           <h1 className="text-2xl md:text-3xl font-bold text-white mb-1">{level.name}</h1>
           <p className="text-violet-300/90 text-xs font-medium mb-1">{level.concept}</p>
@@ -1030,7 +1030,7 @@ export default function FrogFunctionPond2() {
                 animate={{ scale: 1, opacity: 1 }}
                 className="glass rounded-3xl p-8 max-w-md text-center border border-indigo-500/30"
               >
-                <div className="text-5xl mb-4">🧬</div>
+                <div className="text-5xl mb-4">🐸</div>
                 <h2 className="text-2xl font-bold text-white mb-2">Kernel compiled!</h2>
                 <p className="text-gray-300 mb-4 text-sm">
                   Solved with {commands.length} main-script blocks via nested functions.

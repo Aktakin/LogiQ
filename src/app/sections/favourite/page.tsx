@@ -19,6 +19,16 @@ interface GameItem {
 
 const favouriteGames: GameItem[] = [
   {
+    id: 'functions-2',
+    title: 'Frog Function Pond 2',
+    description: 'Harder kernels — nest functions inside functions under tight script caps',
+    icon: '🐸',
+    href: '/games/programming/functions-2',
+    color: '#7c3aed',
+    tags: ['Nesting', 'Composition'],
+    isNew: true,
+  },
+  {
     id: 'variables',
     title: 'Variable Vault',
     description: 'Learn how computers store and manipulate data',
@@ -65,16 +75,6 @@ const favouriteGames: GameItem[] = [
     href: '/games/programming/functions',
     color: '#10b981',
     tags: ['Functions', 'Abstraction'],
-  },
-  {
-    id: 'functions-2',
-    title: 'Frog Function Pond 2',
-    description: 'Harder kernels — nest functions inside functions under tight script caps',
-    icon: '🧬',
-    href: '/games/programming/functions-2',
-    color: '#6366f1',
-    tags: ['Nesting', 'Composition'],
-    isNew: true,
   },
   {
     id: 'rock-paper-scissors',
@@ -138,7 +138,7 @@ export default function FavouriteSection() {
         </div>
         <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">Favourite</h1>
         <p className="text-gray-400 text-sm sm:text-base max-w-xl mx-auto">
-          Hand-picked games to jump into fast — variables, conditions, arrays, functions and more!
+          Hand-picked games to jump into fast — including Frog Function Pond 2, conditions, arrays, and more!
         </p>
       </motion.div>
 
