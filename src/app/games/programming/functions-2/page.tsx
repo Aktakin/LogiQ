@@ -487,7 +487,7 @@ export default function FrogFunctionPond2() {
                     onClick={() => addFunctionCall(func.id)}
                     disabled={
                       (!editingFunction && (commands.length >= level.maxCommands || isRunning)) ||
-                      (editingFunction &&
+                      (!!editingFunction &&
                         (getSteps(editingFunction).length >= level.maxFunctionCommands ||
                           func.id === editingFunction.id))
                     }
