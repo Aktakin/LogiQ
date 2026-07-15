@@ -4,7 +4,8 @@ export type CategoryIconId =
   | 'logic-builders'
   | 'games'
   | 'game-dev'
-  | 'programming';
+  | 'programming'
+  | 'game-room';
 
 const iconProps = {
   fill: 'none',
@@ -70,6 +71,13 @@ export function CategoryLineIcon({
         <>
           <path {...iconProps} d="M8 6L4 12l4 6M16 6l4 6-4 6" />
           <path {...iconProps} d="M13 5l-2 14" />
+        </>
+      )}
+      {id === 'game-room' && (
+        <>
+          <circle {...iconProps} cx="9" cy="10" r="3.5" />
+          <circle {...iconProps} cx="15" cy="14" r="3.5" />
+          <path {...iconProps} d="M12 11.5l1.5 1" />
         </>
       )}
     </svg>

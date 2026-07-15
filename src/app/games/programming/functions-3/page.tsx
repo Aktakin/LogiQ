@@ -406,7 +406,17 @@ export default function FrogFunctionPond3() {
   if (!level) return null;
 
   const cellSize =
-    level.gridSize <= 6 ? 48 : level.gridSize <= 8 ? 40 : level.gridSize <= 10 ? 34 : level.gridSize <= 12 ? 28 : 22;
+    level.gridSize <= 6
+      ? 48
+      : level.gridSize <= 8
+        ? 40
+        : level.gridSize <= 10
+          ? 34
+          : level.gridSize <= 12
+            ? 28
+            : level.gridSize <= 14
+              ? 22
+              : 18;
   const nestableFuncs = editingFunction
     ? allFunctions.filter((f) => f.id !== editingFunction.id)
     : allFunctions;

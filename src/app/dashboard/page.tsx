@@ -57,6 +57,16 @@ const categories: Category[] = [
     features: ['Patterns', 'Reasoning', 'Problem Solving', 'Deduction'],
   },
   {
+    id: 'game-room',
+    title: 'Game Room',
+    description: 'Create a code, invite a friend, and play together live — max 2 players per room.',
+    color: '#22d3ee',
+    bgGradient: 'from-cyan-600/30 to-sky-600/20',
+    href: '/sections/game-room',
+    gameCount: 1,
+    features: ['Create', 'Join', 'Live', '2 Players'],
+  },
+  {
     id: 'games',
     title: 'Fun Games',
     description: 'Enjoy exciting arcade and puzzle games while learning valuable skills!',

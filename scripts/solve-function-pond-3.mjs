@@ -217,6 +217,46 @@ const SOLUTIONS = {
     },
     main: ['route'],
   },
+  11: {
+    custom: {
+      hop2: [F, F],
+      cross: ['hop2', 'hop2', 'hop2', 'hop2', 'hop2', 'hop2', F],
+      route: ['cross', L, F, L, 'cross', R, F, R, 'cross', L, F, L, 'cross', R, F, R, 'cross', L, F, L, 'cross', R, F, R, 'cross', L, F, L, 'cross', R, F, R, 'cross', L, F, L, 'cross', R, F, R, 'cross', L, F, L, 'cross'],
+    },
+    main: ['route'],
+  },
+  12: {
+    custom: {
+      hop3: [F, F, F],
+      cross: ['hop3', 'hop3', 'hop3', 'hop3', 'hop3'],
+      route: ['cross', L, F, L, 'cross', R, F, R, 'cross', L, F, L, 'cross', R, F, R, 'cross', L, F, L, 'cross', R, F, R, 'cross', L, F, L, 'cross', R, F, R, 'cross', L, F, L, 'cross'],
+    },
+    main: ['route'],
+  },
+  13: {
+    custom: {
+      hop2: [F, F],
+      hop4: ['hop2', 'hop2'],
+      top: ['hop4', 'hop4', R, 'hop2', R, 'hop4', 'hop2', L, 'hop2', L, 'hop4', 'hop4', 'hop2', R, 'hop2', R, 'hop4', 'hop4', L, 'hop2', L, 'hop4', 'hop4', 'hop4', R, 'hop2', R, 'hop4', 'hop4', 'hop2', L, F, L, 'hop4', 'hop2'],
+    },
+    main: ['top'],
+  },
+  14: {
+    custom: {
+      hop2: [F, F],
+      cross: ['hop2', 'hop2', 'hop2', 'hop2', 'hop2', 'hop2', F],
+      route: ['cross', L, F, L, 'cross', R, F, R, 'cross', L, F, L, 'cross', R, F, R, 'cross', L, F, L, 'cross', R, F, R, 'cross', L, F, L, 'cross', R, F, R, 'cross', L, F, L, 'cross', R, F, R, 'cross', L, F, L, 'cross', R, F, R, 'cross', L, F, L, 'cross'],
+    },
+    main: ['route'],
+  },
+  15: {
+    custom: {
+      hop3: [F, F, F],
+      cross: ['hop3', 'hop3', 'hop3', 'hop3', 'hop3'],
+      route: ['cross', L, F, L, 'cross', R, F, R, 'cross', L, F, L, 'cross', R, F, R, 'cross', L, F, L, 'cross', R, F, R, 'cross', L, F, L, 'cross', R, F, R, 'cross', L, F, L, 'cross', R, F, R, 'cross', L, F, L, 'cross'],
+    },
+    main: ['route'],
+  },
 };
 
 const levels = extractLevels(text);
@@ -236,5 +276,5 @@ for (const L of levels) {
     fails++;
   }
 }
-console.log(fails ? `\n${fails} failed` : '\nAll 10 OK');
+console.log(fails ? `\n${fails} failed` : '\nAll levels OK');
 process.exit(fails ? 1 : 0);
