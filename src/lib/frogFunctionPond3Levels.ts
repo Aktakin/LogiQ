@@ -391,7 +391,7 @@ export const frogFunctionPond3Levels: Level[] = [
     allowNesting: true,
     tutorial: 'Extinction boss — five harder ponds wait after this.',
     hint: 'cross = 13 hops. Ten lane pairs. Main = Route only.',
-  },,
+  },
   {
     id: 11,
     name: 'Twelvefold Scan',
