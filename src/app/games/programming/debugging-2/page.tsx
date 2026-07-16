@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ClipboardEvent, type DragEvent, type KeyboardEvent } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useGameStore } from '@/store/gameStore';
@@ -23,6 +23,19 @@ function normalizeCode(s: string) {
   return s.trim().replace(/\s+/g, ' ');
 }
 
+function blockClipboardKeys(e: KeyboardEvent) {
+  if ((e.ctrlKey || e.metaKey) && ['c', 'v', 'x'].includes(e.key.toLowerCase())) {
+    e.preventDefault();
+  }
+  if (e.shiftKey && e.key === 'Insert') {
+    e.preventDefault();
+  }
+}
+
+function blockClipboardEvent(e: ClipboardEvent | DragEvent) {
+  e.preventDefault();
+}
+
 export default function BugHunter2Game() {
   const router = useRouter();
   const { addStars, incrementGamesPlayed, recordAnswer } = useGameStore();
@@ -39,6 +52,9 @@ export default function BugHunter2Game() {
   const [userFix, setUserFix] = useState('');
   const [fixAttemptResult, setFixAttemptResult] = useState<'none' | 'correct' | 'wrong'>('none');
   const [showSolution, setShowSolution] = useState(false);
+  const [solutionGateOpen, setSolutionGateOpen] = useState(false);
+  const [solutionPasscode, setSolutionPasscode] = useState('');
+  const [solutionPassError, setSolutionPassError] = useState('');
   const [showLevelPicker, setShowLevelPicker] = useState(false);
   const [passcodeInput, setPasscodeInput] = useState('');
   const [passcodeError, setPasscodeError] = useState('');
@@ -58,6 +74,9 @@ export default function BugHunter2Game() {
     setUserFix('');
     setFixAttemptResult('none');
     setShowSolution(false);
+    setSolutionGateOpen(false);
+    setSolutionPasscode('');
+    setSolutionPassError('');
   };
 
   useEffect(() => {
@@ -91,6 +110,9 @@ export default function BugHunter2Game() {
         setUserFix('');
         setFixAttemptResult('none');
         setShowSolution(false);
+        setSolutionGateOpen(false);
+        setSolutionPasscode('');
+        setSolutionPassError('');
       }
     }
   };
@@ -109,6 +131,8 @@ export default function BugHunter2Game() {
         setUserFix('');
         setFixAttemptResult('none');
         setShowSolution(false);
+        setSolutionGateOpen(false);
+        setSolutionPasscode('');
         const bugLines = level.lines.filter((l) => l.hasBug).map((l) => l.id);
         if (newFixed.length === bugLines.length) {
           setGamePhase('complete');
@@ -266,7 +290,7 @@ export default function BugHunter2Game() {
           {gamePhase === 'fixing' && (
             <div className="inline-flex flex-wrap items-center justify-center gap-2 bg-blue-500/20 border border-blue-500/30 rounded-full px-5 py-2">
               <span className="text-blue-300 font-semibold text-sm">Phase 2: Type the fix</span>
-              <span className="text-blue-300/70 text-xs">(Show Solution is peek-only)</span>
+              <span className="text-blue-300/70 text-xs">(solution needs instructor passcode)</span>
             </div>
           )}
           {gamePhase === 'complete' && (
@@ -291,7 +315,12 @@ export default function BugHunter2Game() {
             )}
           </div>
 
-          <div className="p-4 font-mono text-sm">
+          <div
+            className="p-4 font-mono text-sm select-none"
+            onCopy={blockClipboardEvent}
+            onCut={blockClipboardEvent}
+            onContextMenu={(e) => e.preventDefault()}
+          >
             {level.lines.map((line) => {
               const status = getLineStatus(line);
               return (
@@ -299,7 +328,7 @@ export default function BugHunter2Game() {
                   key={line.id}
                   onClick={() => handleLineClick(line.id)}
                   className={`
-                    flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-all
+                    flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-all select-none
                     ${status === 'fixed' ? 'bg-green-500/20 border border-green-500/50' : ''}
                     ${status === 'found' ? 'bg-red-500/20 border border-red-500/50' : ''}
                     ${status === 'animating' ? 'bg-yellow-500/30' : ''}
@@ -310,9 +339,11 @@ export default function BugHunter2Game() {
                   <span className="text-slate-500 w-6 text-right select-none">{line.id}</span>
                   <span className="text-slate-600 select-none">│</span>
                   {status === 'fixed' ? (
-                    <span className="text-green-400">{line.correctCode}</span>
+                    <span className="text-green-400 select-none">{line.correctCode}</span>
                   ) : (
-                    <span className={status === 'found' ? 'text-red-400' : 'text-slate-300'}>
+                    <span
+                      className={`select-none ${status === 'found' ? 'text-red-400' : 'text-slate-300'}`}
+                    >
                       {line.code}
                     </span>
                   )}
@@ -343,7 +374,11 @@ export default function BugHunter2Game() {
                 initial={{ scale: 0.9, y: 12 }}
                 animate={{ scale: 1, y: 0 }}
                 exit={{ scale: 0.9, y: 12 }}
-                className="bg-slate-800 rounded-2xl p-6 max-w-xl w-full border border-rose-500/30 shadow-2xl"
+                className="bg-slate-800 rounded-2xl p-6 max-w-xl w-full border border-rose-500/30 shadow-2xl select-none"
+                onCopy={blockClipboardEvent}
+                onCut={blockClipboardEvent}
+                onPaste={blockClipboardEvent}
+                onContextMenu={(e) => e.preventDefault()}
               >
                 {(() => {
                   const buggyLine = level.lines.find((l) => l.id === selectedLine);
@@ -354,25 +389,91 @@ export default function BugHunter2Game() {
                         <span>⌨️</span> Type the fix
                       </h3>
                       <p className="text-slate-400 text-xs mb-4">
-                        You must type the corrected line yourself — Show Solution only peeks.
+                        Type it yourself — copy/paste is blocked. Solution peek needs instructor passcode.
                       </p>
 
                       <div className="mb-3">
                         <div className="text-sm text-red-400 mb-2">🐛 {buggyLine.bugType}</div>
-                        <div className="bg-red-500/20 rounded-xl p-3 font-mono text-red-400 text-sm break-all">
+                        <div className="bg-red-500/20 rounded-xl p-3 font-mono text-red-400 text-sm break-all select-none">
                           {buggyLine.code}
                         </div>
                       </div>
 
-                      <div className="bg-indigo-500/20 rounded-xl p-3 mb-4">
+                      <div className="bg-indigo-500/20 rounded-xl p-3 mb-4 select-none">
                         <span className="text-indigo-300 text-sm">💡 Hint: {buggyLine.hint}</span>
                       </div>
 
                       {showSolution && (
                         <div className="mb-4">
-                          <div className="text-sm text-amber-300/90 mb-2">👀 Solution (type it below):</div>
-                          <div className="bg-amber-500/15 border border-amber-500/30 rounded-xl p-3 font-mono text-amber-200 text-sm break-all select-text">
+                          <div className="text-sm text-amber-300/90 mb-2">
+                            👀 Instructor solution (student still types it):
+                          </div>
+                          <div className="bg-amber-500/15 border border-amber-500/30 rounded-xl p-3 font-mono text-amber-200 text-sm break-all select-none">
                             {buggyLine.correctCode}
+                          </div>
+                        </div>
+                      )}
+
+                      {solutionGateOpen && !showSolution && (
+                        <div className="mb-4 rounded-xl border border-amber-500/40 bg-amber-500/10 p-4">
+                          <p className="text-amber-200 text-sm font-semibold mb-2 text-center">
+                            Instructor passcode required
+                          </p>
+                          <input
+                            type="password"
+                            inputMode="numeric"
+                            value={solutionPasscode}
+                            onChange={(e) => {
+                              setSolutionPasscode(e.target.value);
+                              setSolutionPassError('');
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                if (solutionPasscode === LEVEL_PASSCODE) {
+                                  setShowSolution(true);
+                                  setSolutionGateOpen(false);
+                                  setSolutionPasscode('');
+                                  setSolutionPassError('');
+                                } else {
+                                  setSolutionPassError('Wrong passcode');
+                                }
+                              }
+                            }}
+                            placeholder="Passcode"
+                            className="w-full mb-2 px-4 py-2 rounded-xl bg-slate-900/60 border border-white/20 text-white text-center"
+                            autoFocus
+                          />
+                          {solutionPassError && (
+                            <p className="text-red-400 text-xs text-center mb-2">{solutionPassError}</p>
+                          )}
+                          <div className="flex gap-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (solutionPasscode === LEVEL_PASSCODE) {
+                                  setShowSolution(true);
+                                  setSolutionGateOpen(false);
+                                  setSolutionPasscode('');
+                                  setSolutionPassError('');
+                                } else {
+                                  setSolutionPassError('Wrong passcode');
+                                }
+                              }}
+                              className="flex-1 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-sm font-semibold"
+                            >
+                              Unlock solution
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSolutionGateOpen(false);
+                                setSolutionPasscode('');
+                                setSolutionPassError('');
+                              }}
+                              className="px-3 py-2 rounded-xl text-slate-400 text-sm hover:text-white"
+                            >
+                              Cancel
+                            </button>
                           </div>
                         </div>
                       )}
@@ -399,10 +500,16 @@ export default function BugHunter2Game() {
                               setFixAttemptResult('none');
                             }}
                             onKeyDown={(e) => {
+                              blockClipboardKeys(e);
                               if (e.key === 'Enter' && userFix.trim()) checkUserFix(selectedLine);
                             }}
+                            onPaste={blockClipboardEvent}
+                            onCopy={blockClipboardEvent}
+                            onCut={blockClipboardEvent}
+                            onDrop={blockClipboardEvent}
+                            onContextMenu={(e) => e.preventDefault()}
                             placeholder="Type the full fixed line…"
-                            className={`w-full px-4 py-3 rounded-xl font-mono text-sm border-2 transition-all
+                            className={`w-full px-4 py-3 rounded-xl font-mono text-sm border-2 transition-all select-none
                               ${
                                 fixAttemptResult === 'wrong'
                                   ? 'bg-red-500/10 border-red-500/50 text-red-300'
@@ -411,6 +518,8 @@ export default function BugHunter2Game() {
                             autoFocus
                             spellCheck={false}
                             autoComplete="off"
+                            autoCorrect="off"
+                            autoCapitalize="off"
                           />
                           {fixAttemptResult === 'wrong' && (
                             <p className="text-red-400 text-sm mt-2">
@@ -437,10 +546,14 @@ export default function BugHunter2Game() {
                           >
                             ✓ Check typing
                           </motion.button>
-                          {!showSolution && (
+                          {!showSolution && !solutionGateOpen && (
                             <motion.button
                               type="button"
-                              onClick={() => setShowSolution(true)}
+                              onClick={() => {
+                                setSolutionGateOpen(true);
+                                setSolutionPasscode('');
+                                setSolutionPassError('');
+                              }}
                               className="px-4 py-3 rounded-xl bg-slate-700 text-slate-200 hover:bg-slate-600"
                               whileHover={{ scale: 1.02 }}
                               whileTap={{ scale: 0.98 }}
@@ -454,6 +567,9 @@ export default function BugHunter2Game() {
                               setSelectedLine(null);
                               setUserFix('');
                               setShowSolution(false);
+                              setSolutionGateOpen(false);
+                              setSolutionPasscode('');
+                              setSolutionPassError('');
                               setFixAttemptResult('none');
                             }}
                             className="px-4 py-3 rounded-xl text-slate-400 hover:text-white text-sm"
