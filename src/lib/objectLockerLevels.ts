@@ -455,7 +455,7 @@ export const objectLockerLevels: ObjectLevel[] = [
     mode: 'create',
     chapter: 'final',
     startObject: {},
-    starterCode: 'let hero = {\n  name: "",\n  power: "",\n  strength: ,\n  speed: ,\n  canFly: \n}',
+    starterCode: '',
     solutions: [],
     createVar: 'hero',
     createFields: [
@@ -477,8 +477,7 @@ export const objectLockerLevels: ObjectLevel[] = [
     mode: 'create',
     chapter: 'final',
     startObject: {},
-    starterCode:
-      'let city = {\n  name: "",\n  population: ,\n  landmark: "",\n  neon: \n}',
+    starterCode: '',
     solutions: [],
     createVar: 'city',
     createFields: [
