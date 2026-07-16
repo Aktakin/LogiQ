@@ -33,7 +33,7 @@ const categories: Category[] = [
     color: '#f43f5e',
     bgGradient: 'from-rose-600/30 to-pink-600/20',
     href: '/sections/favourite',
-    gameCount: 10,
+    gameCount: 11,
     features: ['Variables', 'Conditions', 'Arrays', 'Functions'],
   },
   {

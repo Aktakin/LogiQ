@@ -19,6 +19,16 @@ interface GameItem {
 
 const favouriteGames: GameItem[] = [
   {
+    id: 'debugging-2',
+    title: 'Bug Hunter 2',
+    description: '30 levels — find bugs, peek if you need, but type every fix yourself',
+    icon: '🐛',
+    href: '/games/programming/debugging-2',
+    color: '#f43f5e',
+    tags: ['Debugging', 'Typing', '30 Levels'],
+    isNew: true,
+  },
+  {
     id: 'functions-3',
     title: 'Frog Function Pond 3',
     description: 'No free Hop×N — build & nest your own kernels (main = functions only)',
