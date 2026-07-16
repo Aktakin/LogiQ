@@ -1,4 +1,4 @@
-import type { ObjectLevel } from './objectLockerLevels';
+import type { ObjectLevel } from './objectLockerTypes';
 
 /**
  * Method chapter — levels 19+ after Final Character Game.

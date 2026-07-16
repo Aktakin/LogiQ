@@ -926,11 +926,14 @@ export default function ObjectLockerPage() {
             <motion.div
               initial={{ scale: 0.95 }}
               animate={{ scale: 1 }}
-              className="glass rounded-2xl p-6 max-w-md w-full border border-cyan-500/30"
+              className="glass rounded-2xl p-6 max-w-lg w-full max-h-[85vh] overflow-y-auto border border-cyan-500/30"
               onClick={(e) => e.stopPropagation()}
             >
               <h3 className="text-white font-bold text-center mb-2">Jump to level</h3>
-              <p className="text-slate-400 text-sm text-center mb-3">Instructor passcode</p>
+              <p className="text-slate-400 text-sm text-center mb-1">Instructor passcode</p>
+              <p className="text-cyan-300/80 text-xs text-center mb-3">
+                {levels.length} levels · 1–15 objects · 16–18 final · 19–37 methods
+              </p>
               <input
                 type="password"
                 value={pass}
@@ -959,7 +962,7 @@ export default function ObjectLockerPage() {
                 Unlock
               </button>
               {unlocked && (
-                <div className="grid grid-cols-5 gap-2">
+                <div className="grid grid-cols-5 sm:grid-cols-7 gap-2 pb-2">
                   {levels.map((lv, i) => (
                     <button
                       key={lv.id}

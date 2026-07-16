@@ -1,95 +1,29 @@
 import { objectLockerMethodLevels } from './objectLockerMethodLevels';
+import type {
+  CityObject,
+  CreateField,
+  EnemyObject,
+  HeroObject,
+  ObjectLevel,
+  ObjectValue,
+} from './objectLockerTypes';
 
-export type ObjectValue = string | number | boolean;
-
-export type ObjectMode = 'build' | 'access' | 'update' | 'create' | 'play' | 'method' | 'playMethods';
-
-export type CreateFieldType = 'string' | 'number' | 'boolean';
-
-export type PlayKind = 'shootPractice' | 'heroCombo' | 'arena';
-
-export type UnlockMethod = 'shoot' | 'superJump' | 'grow' | 'enemyChase' | 'enemyRoar';
-
-export interface CreateField {
-  key: string;
-  type: CreateFieldType;
-  /** Optional allowed strings (case-insensitive) — empty means any non-empty string. */
-  choices?: string[];
-  min?: number;
-  max?: number;
-}
-
-export interface ObjectLevel {
-  id: number;
-  title: string;
-  concept: string;
-  instruction: string;
-  hint: string;
-  explanation: string;
-  mode: ObjectMode;
-  /** Shown in the locker (start state). */
-  startObject: Record<string, ObjectValue>;
-  /** Goal locker after a successful build/update (access uses startObject). */
-  targetObject?: Record<string, ObjectValue>;
-  /** For access mode — value the expression should mean. */
-  expectedValue?: string;
-  starterCode: string;
-  /** Acceptable typed answers (compared normalized). Empty for create/play. */
-  solutions: string[];
-  /** Final creative levels — validate required keys/types. */
-  createVar?: string;
-  createFields?: CreateField[];
-  /** Badge in the level picker / header. */
-  chapter?: 'final' | 'methods';
-  /** Method names shown in the locker UI. */
-  methodNames?: string[];
-  /** Unlock a gameplay ability when this level is solved. */
-  unlockMethod?: UnlockMethod;
-  /** Which mini-game for playMethods mode. */
-  playKind?: PlayKind;
-}
-
-export type HeroObject = {
-  name: string;
-  power: string;
-  strength: number;
-  speed: number;
-  canFly: boolean;
-};
-
-export type CityObject = {
-  name: string;
-  population: number;
-  landmark: string;
-  neon: boolean;
-};
-
-export type EnemyObject = {
-  name: string;
-  hp: number;
-  speed: number;
-};
-
-export type HeroMethods = {
-  shoot?: boolean;
-  superJump?: boolean;
-  grow?: boolean;
-};
-
-export type EnemyMethods = {
-  chase?: boolean;
-  roar?: boolean;
-};
-
-export const OBJECT_LOCKER_SAVE_KEY = 'object-locker-creations-v1';
-
-export type ObjectLockerSave = {
-  hero?: HeroObject;
-  city?: CityObject;
-  enemy?: EnemyObject;
-  heroMethods?: HeroMethods;
-  enemyMethods?: EnemyMethods;
-};
+export type {
+  CityObject,
+  CreateField,
+  CreateFieldType,
+  EnemyMethods,
+  EnemyObject,
+  HeroMethods,
+  HeroObject,
+  ObjectLevel,
+  ObjectLockerSave,
+  ObjectMode,
+  ObjectValue,
+  PlayKind,
+  UnlockMethod,
+} from './objectLockerTypes';
+export { OBJECT_LOCKER_SAVE_KEY } from './objectLockerTypes';
 
 function n(s: string) {
   return s.trim().replace(/\s+/g, ' ');
