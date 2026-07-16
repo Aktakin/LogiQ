@@ -87,6 +87,16 @@ const codeQuestGames: GameItem[] = [
     tags: ['Variables', 'Memory'],
   },
   {
+    id: 'objects',
+    title: 'Object Locker',
+    description: 'Objects puzzles + Final Levels: hero, city, and a playable character game',
+    icon: '🗄️',
+    href: '/games/programming/objects',
+    color: '#22d3ee',
+    tags: ['Objects', 'Keys', 'Puzzles'],
+    isNew: true,
+  },
+  {
     id: 'case-cipher',
     title: 'Case Cipher',
     description: 'Timed typing — exact case; personal best in ms',

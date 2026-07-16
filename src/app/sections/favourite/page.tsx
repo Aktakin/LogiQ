@@ -19,6 +19,16 @@ interface GameItem {
 
 const favouriteGames: GameItem[] = [
   {
+    id: 'objects',
+    title: 'Object Locker',
+    description: 'Build objects, then forge a hero + city and play your Final Character Game',
+    icon: '🗄️',
+    href: '/games/programming/objects',
+    color: '#22d3ee',
+    tags: ['Objects', 'Keys', 'Puzzles'],
+    isNew: true,
+  },
+  {
     id: 'debugging-2',
     title: 'Bug Hunter 2',
     description: '30 levels — find bugs, peek if you need, but type every fix yourself',
