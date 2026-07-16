@@ -9,19 +9,24 @@ import FloatingShapes from '@/components/FloatingShapes';
 import {
   OBJECT_LOCKER_SAVE_KEY,
   asCity,
+  asEnemy,
   asHero,
   checkObjectAnswer,
   defaultCity,
+  defaultEnemy,
   defaultHero,
   nestedHomePreview,
   objectLockerLevels,
   validateCreateAnswer,
   type CityObject,
+  type EnemyObject,
+  type HeroMethods,
   type HeroObject,
   type ObjectLevel,
   type ObjectLockerSave,
   type ObjectValue,
 } from '@/lib/objectLockerLevels';
+import MethodsArena from './MethodsArena';
 
 const LEVEL_PASSCODE = '4311';
 const ORBS_TO_WIN = 5;
@@ -32,6 +37,8 @@ const modeMeta = {
   update: { label: 'Update', color: 'text-fuchsia-300', border: 'border-fuchsia-500/40', blurb: 'Change a drawer' },
   create: { label: 'Final', color: 'text-emerald-300', border: 'border-emerald-500/40', blurb: 'Design your own' },
   play: { label: 'Play', color: 'text-rose-300', border: 'border-rose-500/40', blurb: 'Character game' },
+  method: { label: 'Method', color: 'text-violet-300', border: 'border-violet-500/40', blurb: 'Call or attach ()' },
+  playMethods: { label: 'Arena', color: 'text-violet-300', border: 'border-violet-500/40', blurb: 'Use your methods' },
 };
 
 const powerFx: Record<string, { label: string; color: string; emoji: string }> = {
@@ -68,20 +75,23 @@ function LockerView({
   data,
   nested,
   highlightKey,
+  methodNames,
 }: {
   title: string;
   data: Record<string, ObjectValue>;
   nested?: Record<string, ObjectValue> | null;
   highlightKey?: string;
+  methodNames?: string[];
 }) {
   const keys = Object.keys(data).filter((k) => !(nested && k === 'home'));
   const showNested = Boolean(nested);
+  const methods = methodNames || [];
   return (
     <div className="glass rounded-2xl border border-white/15 p-4 h-full">
       <div className="text-xs uppercase tracking-wide text-slate-400 mb-3 flex items-center gap-2">
         <span className="text-lg">🗄️</span> {title}
       </div>
-      {keys.length === 0 && !showNested ? (
+      {keys.length === 0 && !showNested && methods.length === 0 ? (
         <div className="text-slate-500 text-sm py-8 text-center border border-dashed border-white/10 rounded-xl">
           Empty object {'{ }'}
         </div>
@@ -100,6 +110,18 @@ function LockerView({
               <div className="flex items-baseline justify-between gap-2">
                 <span className="font-mono text-cyan-300 text-sm">{key}</span>
                 <span className="font-mono text-white text-sm break-all">{formatVal(data[key]!)}</span>
+              </div>
+            </motion.div>
+          ))}
+          {methods.map((m) => (
+            <motion.div
+              key={`m-${m}`}
+              layout
+              className="rounded-xl px-3 py-2 border border-violet-500/35 bg-violet-500/10"
+            >
+              <div className="flex items-baseline justify-between gap-2">
+                <span className="font-mono text-violet-300 text-sm">{m}()</span>
+                <span className="font-mono text-slate-400 text-xs">method</span>
               </div>
             </motion.div>
           ))}
@@ -162,6 +184,21 @@ function GoalPanel({ level, created }: { level: ObjectLevel; created: Record<str
           {level.expectedValue}
         </div>
         <p className="text-slate-400 text-xs text-center">Type the expression that reads it</p>
+      </div>
+    );
+  }
+  if (level.mode === 'method') {
+    return (
+      <div className="glass rounded-2xl border border-violet-500/25 p-4 h-full">
+        <div className="text-xs uppercase tracking-wide text-violet-200/70 mb-3">Method goal</div>
+        <p className="text-slate-300 text-sm mb-3">Methods are actions — call with <span className="font-mono text-violet-300">()</span></p>
+        <div className="space-y-2">
+          {(level.methodNames || []).map((m) => (
+            <div key={m} className="rounded-xl px-3 py-2 border border-violet-500/30 bg-violet-500/10 font-mono text-sm text-violet-200">
+              .{m}()
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
@@ -466,6 +503,8 @@ export default function ObjectLockerPage() {
   const [passErr, setPassErr] = useState('');
   const [hero, setHero] = useState<HeroObject>(defaultHero);
   const [city, setCity] = useState<CityObject>(defaultCity);
+  const [enemy, setEnemy] = useState<EnemyObject>(defaultEnemy);
+  const [heroMethods, setHeroMethods] = useState<HeroMethods>({});
   const [playWon, setPlayWon] = useState(false);
 
   const levels = objectLockerLevels;
@@ -473,11 +512,14 @@ export default function ObjectLockerPage() {
   const meta = modeMeta[level.mode];
   const nested = level.id === 14 ? nestedHomePreview : null;
   const isFinal = level.chapter === 'final';
+  const isMethods = level.chapter === 'methods';
 
   useEffect(() => {
     const save = loadSave();
     if (save.hero) setHero(save.hero);
     if (save.city) setCity(save.city);
+    if (save.enemy) setEnemy(save.enemy);
+    if (save.heroMethods) setHeroMethods(save.heroMethods);
   }, []);
 
   const reset = () => {
@@ -519,6 +561,11 @@ export default function ObjectLockerPage() {
           setCity(c);
           writeSave({ ...loadSave(), city: c });
         }
+        if (level.createVar === 'enemy') {
+          const e = asEnemy(v.data);
+          setEnemy(e);
+          writeSave({ ...loadSave(), enemy: e });
+        }
         celebrate();
       } else {
         setResult('bad');
@@ -530,10 +577,26 @@ export default function ObjectLockerPage() {
 
     if (checkObjectAnswer(level, code)) {
       setErrorMsg('');
+      if (level.unlockMethod) {
+        const save = loadSave();
+        const hm = { ...(save.heroMethods || {}), ...(heroMethods || {}) };
+        const em = { ...(save.enemyMethods || {}) };
+        if (level.unlockMethod === 'shoot') hm.shoot = true;
+        if (level.unlockMethod === 'superJump') hm.superJump = true;
+        if (level.unlockMethod === 'grow') hm.grow = true;
+        if (level.unlockMethod === 'enemyChase') em.chase = true;
+        if (level.unlockMethod === 'enemyRoar') em.roar = true;
+        setHeroMethods(hm);
+        writeSave({ ...save, heroMethods: hm, enemyMethods: em });
+      }
       celebrate();
     } else {
       setResult('bad');
-      setErrorMsg('');
+      setErrorMsg(
+        level.mode === 'method'
+          ? 'Check the method name, dots, and parentheses ().'
+          : ''
+      );
       recordAnswer(false);
     }
   };
@@ -589,13 +652,19 @@ export default function ObjectLockerPage() {
 
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-6">
           <p className="text-cyan-300/90 text-xs font-semibold uppercase tracking-wide mb-1">
-            {isFinal ? 'Final Levels · Your Game Objects' : 'Objects · Key → Value'}
+            {isMethods
+              ? 'Methods · Actions on Objects'
+              : isFinal
+                ? 'Final Levels · Your Game Objects'
+                : 'Objects · Key → Value'}
           </p>
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">🗄️ Object Locker</h1>
           <p className="text-slate-400 text-sm max-w-xl mx-auto">
-            {isFinal
-              ? 'Forge a hero, design a city, then play the Final Character Game powered by your objects.'
-              : 'Pack labeled drawers, peek inside, and update what\'s stored — that\'s an object!'}
+            {isMethods
+              ? 'Learn method calls, attach shoot / superJump / grow, then face an enemy you built.'
+              : isFinal
+                ? 'Forge a hero, design a city, then play the Final Character Game powered by your objects.'
+                : 'Pack labeled drawers, peek inside, and update what\'s stored — that\'s an object!'}
           </p>
         </motion.div>
 
@@ -604,7 +673,11 @@ export default function ObjectLockerPage() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           className={`glass rounded-2xl border p-5 mb-5 ${
-            isFinal ? 'border-emerald-500/35' : 'border-indigo-500/25'
+            isMethods
+              ? 'border-violet-500/35'
+              : isFinal
+                ? 'border-emerald-500/35'
+                : 'border-indigo-500/25'
           }`}
         >
           <h2 className="text-xl font-bold text-white mb-1">{level.title}</h2>
@@ -614,6 +687,21 @@ export default function ObjectLockerPage() {
 
         {level.mode === 'play' ? (
           <FinalCharacterGame hero={hero} city={city} onWin={onPlayWin} />
+        ) : level.mode === 'playMethods' && level.playKind ? (
+          <MethodsArena
+            kind={level.playKind}
+            hero={hero}
+            city={city}
+            enemy={enemy}
+            methods={
+              level.playKind === 'shootPractice'
+                ? { ...heroMethods, shoot: true }
+                : level.playKind === 'heroCombo'
+                  ? { shoot: true, superJump: true, grow: true }
+                  : { shoot: true, superJump: true, grow: true, ...heroMethods }
+            }
+            onWin={onPlayWin}
+          />
         ) : (
           <>
             <div className="grid md:grid-cols-2 gap-4 mb-5">
@@ -621,7 +709,9 @@ export default function ObjectLockerPage() {
                 title={
                   level.mode === 'build' || level.mode === 'create'
                     ? 'Your locker (empty → fill)'
-                    : 'Current locker'
+                    : level.mode === 'method'
+                      ? 'Object + methods'
+                      : 'Current locker'
                 }
                 data={
                   (level.mode === 'build' || level.mode === 'create') && result !== 'ok'
@@ -633,6 +723,13 @@ export default function ObjectLockerPage() {
                         : level.startObject
                 }
                 nested={nested}
+                methodNames={
+                  level.mode === 'method'
+                    ? result === 'ok' || !level.solutions.some((s) => s.includes('='))
+                      ? level.methodNames
+                      : undefined
+                    : undefined
+                }
               />
               <GoalPanel level={level} created={result === 'ok' ? created : null} />
             </div>
@@ -685,12 +782,14 @@ export default function ObjectLockerPage() {
                     }`}
                   placeholder={
                     level.mode === 'create'
-                      ? 'let hero = { ... }'
-                      : level.mode === 'build'
-                        ? 'let thing = { ... }'
-                        : level.mode === 'access'
-                          ? 'object.key'
-                          : 'object.key = value'
+                      ? 'let enemy = { ... }'
+                      : level.mode === 'method'
+                        ? 'object.method()  or  object.method = function() {}'
+                        : level.mode === 'build'
+                          ? 'let thing = { ... }'
+                          : level.mode === 'access'
+                            ? 'object.key'
+                            : 'object.key = value'
                   }
                 />
               </div>
@@ -706,7 +805,8 @@ export default function ObjectLockerPage() {
               exit={{ opacity: 0 }}
               className="mb-4 rounded-xl border border-green-500/40 bg-green-500/15 px-4 py-3 text-green-300 text-sm"
             >
-              ✓ {level.mode === 'play' ? 'Victory!' : 'Unlocked!'} {level.explanation}
+              ✓ {level.mode === 'play' || level.mode === 'playMethods' ? 'Victory!' : 'Unlocked!'}{' '}
+              {level.explanation}
             </motion.div>
           )}
           {result === 'bad' && (
@@ -722,7 +822,7 @@ export default function ObjectLockerPage() {
         </AnimatePresence>
 
         <div className="flex flex-wrap items-center justify-center gap-3 mb-6">
-          {level.mode === 'play' ? (
+          {level.mode === 'play' || level.mode === 'playMethods' ? (
             result === 'ok' ? (
               <motion.button
                 type="button"
@@ -733,11 +833,17 @@ export default function ObjectLockerPage() {
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
               >
-                🏆 Done — Favourites
+                {index < levels.length - 1
+                  ? level.id === 18
+                    ? 'Learn Methods →'
+                    : 'Next →'
+                  : '🏆 Done — Favourites'}
               </motion.button>
             ) : (
               <p className="text-slate-400 text-sm text-center">
-                Use ← → / Jump / Power — collect {ORBS_TO_WIN} orbs to finish.
+                {level.mode === 'play'
+                  ? `Use ← → / Jump / Power — collect ${ORBS_TO_WIN} orbs to finish.`
+                  : 'Use the method buttons (or keys) to finish this arena.'}
               </p>
             )
           ) : result !== 'ok' ? (
@@ -749,7 +855,11 @@ export default function ObjectLockerPage() {
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
               >
-                {level.mode === 'create' ? 'Save object' : 'Check locker'}
+                {level.mode === 'create'
+                  ? 'Save object'
+                  : level.mode === 'method'
+                    ? 'Check method'
+                    : 'Check locker'}
               </motion.button>
               <button
                 type="button"
@@ -785,13 +895,17 @@ export default function ObjectLockerPage() {
                     ? 'Design your city →'
                     : index === 16
                       ? 'Play Final Character Game →'
-                      : 'Next puzzle →'
+                      : level.id === 28
+                        ? 'Build hero methods →'
+                        : level.id === 33
+                          ? 'Create your enemy →'
+                          : 'Next puzzle →'
                 : '🏆 Done — Favourites'}
             </motion.button>
           )}
         </div>
 
-        {showHint && result !== 'ok' && level.mode !== 'play' && (
+        {showHint && result !== 'ok' && level.mode !== 'play' && level.mode !== 'playMethods' && (
           <div className="text-center mb-4">
             <div className="inline-block glass px-5 py-3 rounded-xl border border-amber-500/30 text-amber-200 text-sm select-none">
               💡 {level.hint}
@@ -857,9 +971,11 @@ export default function ObjectLockerPage() {
                       className={`py-2 rounded-lg text-sm font-bold border ${
                         i === index
                           ? 'bg-cyan-500/40 border-cyan-400 text-white'
-                          : lv.chapter === 'final'
-                            ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-200'
-                            : 'bg-white/5 border-white/10 text-gray-300'
+                          : lv.chapter === 'methods'
+                            ? 'bg-violet-500/15 border-violet-500/40 text-violet-200'
+                            : lv.chapter === 'final'
+                              ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-200'
+                              : 'bg-white/5 border-white/10 text-gray-300'
                       }`}
                     >
                       {lv.id}

@@ -1,8 +1,14 @@
+import { objectLockerMethodLevels } from './objectLockerMethodLevels';
+
 export type ObjectValue = string | number | boolean;
 
-export type ObjectMode = 'build' | 'access' | 'update' | 'create' | 'play';
+export type ObjectMode = 'build' | 'access' | 'update' | 'create' | 'play' | 'method' | 'playMethods';
 
 export type CreateFieldType = 'string' | 'number' | 'boolean';
+
+export type PlayKind = 'shootPractice' | 'heroCombo' | 'arena';
+
+export type UnlockMethod = 'shoot' | 'superJump' | 'grow' | 'enemyChase' | 'enemyRoar';
 
 export interface CreateField {
   key: string;
@@ -34,7 +40,13 @@ export interface ObjectLevel {
   createVar?: string;
   createFields?: CreateField[];
   /** Badge in the level picker / header. */
-  chapter?: 'final';
+  chapter?: 'final' | 'methods';
+  /** Method names shown in the locker UI. */
+  methodNames?: string[];
+  /** Unlock a gameplay ability when this level is solved. */
+  unlockMethod?: UnlockMethod;
+  /** Which mini-game for playMethods mode. */
+  playKind?: PlayKind;
 }
 
 export type HeroObject = {
@@ -52,25 +64,52 @@ export type CityObject = {
   neon: boolean;
 };
 
+export type EnemyObject = {
+  name: string;
+  hp: number;
+  speed: number;
+};
+
+export type HeroMethods = {
+  shoot?: boolean;
+  superJump?: boolean;
+  grow?: boolean;
+};
+
+export type EnemyMethods = {
+  chase?: boolean;
+  roar?: boolean;
+};
+
 export const OBJECT_LOCKER_SAVE_KEY = 'object-locker-creations-v1';
 
 export type ObjectLockerSave = {
   hero?: HeroObject;
   city?: CityObject;
+  enemy?: EnemyObject;
+  heroMethods?: HeroMethods;
+  enemyMethods?: EnemyMethods;
 };
 
 function n(s: string) {
   return s.trim().replace(/\s+/g, ' ');
 }
 
-/** Normalize for flexible matching of object literals / access. */
+/** Normalize for flexible matching of object literals / access / methods. */
 export function normalizeObjectAnswer(raw: string): string {
   return n(raw)
     .replace(/;+$/, '')
     .replace(/'/g, '"')
     .replace(/,\s*}/g, ' }')
     .replace(/{\s+/g, '{ ')
-    .replace(/\s+}/g, ' }');
+    .replace(/\s+}/g, ' }')
+    .replace(/function\s*\(\s*\)\s*\{\s*\}/g, 'function() {}')
+    .replace(/\(\s*\)\s*=>\s*\{\s*\}/g, '() => {}')
+    .replace(/:\s*function\s*\(\s*\)\s*\{\s*\}/g, ': function() {}')
+    .replace(/(\w+)\s*\(\s*\)\s*\{\s*\}/g, '$1() {}')
+    .replace(/\(\s*\)/g, '()')
+    .replace(/\s*=\s*/g, ' = ')
+    .replace(/\s*\.\s*/g, '.');
 }
 
 /** Pull `{ ... }` body from typed code. */
@@ -197,7 +236,7 @@ export function checkObjectAnswer(level: ObjectLevel, userCode: string): boolean
   if (level.mode === 'create') {
     return validateCreateAnswer(level, userCode).ok;
   }
-  if (level.mode === 'play') return false;
+  if (level.mode === 'play' || level.mode === 'playMethods') return false;
   const got = normalizeObjectAnswer(userCode);
   return level.solutions.some((s) => normalizeObjectAnswer(s) === got);
 }
@@ -221,12 +260,21 @@ export function asCity(data: Record<string, ObjectValue>): CityObject {
   };
 }
 
+export function asEnemy(data: Record<string, ObjectValue>): EnemyObject {
+  return {
+    name: String(data.name ?? 'Glitch'),
+    hp: Number(data.hp ?? 8),
+    speed: Number(data.speed ?? 4),
+  };
+}
+
 /**
  * Object Locker — puzzle levels teaching JS objects.
  * Build literals, read with . / [], update properties,
- * then Final Levels: hero + city + playable character game.
+ * then Final Levels: hero + city + playable character game,
+ * then Methods chapter.
  */
-export const objectLockerLevels: ObjectLevel[] = [
+const objectLockerCoreLevels: ObjectLevel[] = [
   // ——— BUILD ———
   {
     id: 1,
@@ -334,8 +382,8 @@ export const objectLockerLevels: ObjectLevel[] = [
     id: 8,
     title: 'Bracket Path',
     concept: 'object["key"] is another way to read',
-    instruction: 'Read ship\'s kind using brackets and quotes.',
-    hint: 'Brackets need the key as a string inside.',
+    instruction: 'Read ship\'s kind using square brackets and quotes — like object["key"] (not a dot).',
+    hint: 'Square brackets need the key as a string inside: ship["kind"]',
     explanation: 'ship["kind"] equals ship.kind — brackets are handy when the key is unusual.',
     mode: 'access',
     startObject: { kind: 'rocket', fuel: 80 },
@@ -503,6 +551,11 @@ export const objectLockerLevels: ObjectLevel[] = [
   },
 ];
 
+export const objectLockerLevels: ObjectLevel[] = [
+  ...objectLockerCoreLevels,
+  ...objectLockerMethodLevels,
+];
+
 /** Nested home shown specially in level 14 UI */
 export const nestedHomePreview = { city: 'Mars', pad: 7 };
 
@@ -519,4 +572,10 @@ export const defaultCity: CityObject = {
   population: 1000,
   landmark: 'Park',
   neon: false,
+};
+
+export const defaultEnemy: EnemyObject = {
+  name: 'Glitch',
+  hp: 8,
+  speed: 4,
 };

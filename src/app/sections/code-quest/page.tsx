@@ -89,7 +89,7 @@ const codeQuestGames: GameItem[] = [
   {
     id: 'objects',
     title: 'Object Locker',
-    description: 'Objects puzzles + Final Levels: hero, city, and a playable character game',
+    description: 'Objects + methods: hero abilities, then an enemy with chase & roar',
     icon: '🗄️',
     href: '/games/programming/objects',
     color: '#22d3ee',

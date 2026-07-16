@@ -91,7 +91,7 @@ const categories: Category[] = [
     icon: '🗄️',
     color: '#22d3ee',
     bgGradient: 'from-cyan-600/20 to-sky-600/20',
-    levels: 18,
+    levels: 37,
     completed: 0,
     locked: false,
     comingSoon: false,

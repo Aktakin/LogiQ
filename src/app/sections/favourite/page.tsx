@@ -21,7 +21,7 @@ const favouriteGames: GameItem[] = [
   {
     id: 'objects',
     title: 'Object Locker',
-    description: 'Build objects, then forge a hero + city and play your Final Character Game',
+    description: 'Objects, then methods — forge a hero, add shoot/jump/grow, build an enemy',
     icon: '🗄️',
     href: '/games/programming/objects',
     color: '#22d3ee',
